@@ -1,17 +1,47 @@
-# Open Download Manager
+<div align="center">
+  <img src="app-icon.svg" alt="Open Download Manager logo" width="112" height="112">
+  <h1>Open Download Manager</h1>
+  <p><strong>Your downloads. One simple place.</strong></p>
+  <p>A native Windows download manager with segmented transfers,<br>video downloads, and Firefox &amp; Chromium integration.</p>
+  <p>
+    <img src="https://img.shields.io/badge/platform-Windows_x64-2563eb?style=flat-square" alt="Windows x64">
+    <img src="https://img.shields.io/badge/language-C%2B%2B17-475569?style=flat-square" alt="C++17">
+    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-15803d?style=flat-square" alt="MIT license"></a>
+  </p>
+  <p>
+    <a href="#features">Features</a> &nbsp; · &nbsp;
+    <a href="#getting-started">Getting started</a> &nbsp; · &nbsp;
+    <a href="#build-on-windows">Build</a> &nbsp; · &nbsp;
+    <a href="#browser-extensions">Extensions</a> &nbsp; · &nbsp;
+    <a href="#tests">Tests</a>
+  </p>
+</div>
 
-An original Windows x64 download manager built with C++17, Win32 and WinHTTP, with Firefox and Chromium browser extensions. This repository contains the source of the ODM app, not the proprietary Internet Download Manager product.
+---
 
 ## Features
 
-- Validated segmented HTTP/HTTPS transfers, pause/resume, redirects and safe filename collision handling.
-- Live speed limits and connection settings; FTP and SOCKS through Windows curl.
-- Separate start, progress and completion windows; notification-area operation.
-- Sortable queue columns, including local date and time added. Existing entries without a recorded date display a dash.
-- Browser download capture and a selectable video menu.
-- Supported video and HLS downloads through optional yt-dlp, Deno and FFmpeg tools.
+| | What you get |
+| :--- | :--- |
+| **Segmented downloads** | Validated parallel HTTP/HTTPS transfers with automatic fallback when a server cannot safely support ranges. |
+| **Pause & resume** | Persistent download queues and validated partial-file recovery. |
+| **Browser integration** | Firefox and Chromium extensions capture downloads and offer a selectable video menu. |
+| **Video support** | Supported video and HLS downloads through optional yt-dlp, Deno and FFmpeg tools. |
+| **Live controls** | Change speed limits and connection settings while downloads are running. |
+| **A focused interface** | Separate start, progress and completion windows, sortable columns, and a notification-area icon. |
+| **Organized downloads** | File types, status, progress, speed, and local date and time added in one queue. |
+| **Connection options** | Proxy and authentication settings; FTP and SOCKS transfers through Windows curl. |
 
-Site authentication, browser verification, expiring URLs and DRM can prevent downloads. Increasing connections does not guarantee higher speed.
+## Getting started
+
+1. **Launch** `OpenDownloadManager.exe` after building the app.
+2. **Add a link** with the **+** button, or capture a download using a browser extension.
+3. **Choose a location** and start the download in its separate window.
+4. **Keep browsing** while ODM runs in the notification area, then open the completed file from the completion prompt.
+
+The trash button removes a selected inactive entry. **Clear all** removes inactive entries from the queue. Downloaded files stay on disk.
+
+> **Compatibility:** Site authentication, browser verification, expiring links and DRM can prevent downloads. More connections do not guarantee higher speed. Existing queue entries without a recorded added time display a dash.
 
 ## Build on Windows
 
@@ -61,7 +91,7 @@ python .\tests\test_optimizations.py .\OpenDownloadManager.exe
 
 These tests cover native downloads, resume, segmented transfers, HTTP errors and fallback behavior. They do not certify every website or browser button.
 
-## Source layout
+## Project structure
 
 | Files | Purpose |
 | --- | --- |
@@ -77,4 +107,8 @@ These tests cover native downloads, resume, segmented transfers, HTTP errors and
 
 ## License
 
-Original ODM source is licensed under MIT; see `LICENSE`. Dependencies retain their own licenses. The MIT license does not replace those dependency licenses.
+Original ODM source is licensed under the [MIT License](LICENSE). Third-party components retain their own licenses; see [third-party notices](THIRD_PARTY.md) and the `third-party-licenses` folder.
+
+---
+
+<p align="center"><sub>Built with C++17 · Win32 · WinHTTP</sub></p>

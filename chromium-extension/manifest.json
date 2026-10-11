@@ -1,0 +1,69 @@
+{
+  "manifest_version": 3,
+  "name": "Open Download Manager",
+  "version": "2.6.0",
+  "description": "Send links and YouTube pages to Open Download Manager, with optional automatic file capture.",
+  "permissions": [
+    "nativeMessaging",
+    "downloads",
+    "contextMenus",
+    "storage",
+    "activeTab",
+    "webRequest"
+  ],
+  "background": {
+    "service_worker": "worker.js"
+  },
+  "icons": {
+    "48": "icon.png",
+    "128": "icon.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://filesamples.com/*",
+        "https://www.filesamples.com/*"
+      ],
+      "js": [
+        "compat.js",
+        "filesamples.js"
+      ],
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "compat.js",
+        "video-button.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    },
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "compat.js",
+        "download-links.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs1vj6Cf9WuUjzYdCEJsszBkDcBJONhtosr0h6WJHfmqRc3itrS/ny0LWw3tCf4ZtL+2KgGupyw+SASFvr6Sader5ZWrzdf0jfO+XelYVgMeWBYXonJkb7zbygFhJ6zW5cj8PE82tjNF68fWw2fcSn8gpSkPpZK/IMYvw6jQoC784MD1vSjUfheqmsus9L4nHgtKQuPcSuugudk2iGoV3mPpbu8gj6yxtYBQBndFC61wloQngB+jZ4DJd4ZJo6+D1ivMpMnriWjU1L9G59eV3RdGUtqNu9mhG33t/6SHxldxxD+7f3h2fwEnmbIJ3xg8izR5gdVZstHbpZ0oWMmrrZwIDAQAB",
+  "minimum_chrome_version": "120",
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "action": {
+    "default_title": "Open Download Manager",
+    "default_popup": "popup.html",
+    "default_icon": "icon.png"
+  }
+}
