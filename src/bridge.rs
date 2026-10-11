@@ -140,7 +140,7 @@ pub fn native_host(engine: Arc<Engine>) -> i32 {
         let result = (|| {
             let request: Value = serde_json::from_slice(&data).map_err(|e| e.to_string())?;
             match request["action"].as_str() {
-                Some("ping") => Ok(json!({"ok":true,"version":"3.0.0-rust"})),
+                Some("ping") => Ok(json!({"ok":true,"version":"0.2.0-rust"})),
                 Some("download") => handoff(engine.clone(), request),
                 _ => Err("Unknown native message action".into()),
             }

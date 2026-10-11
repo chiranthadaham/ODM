@@ -1,4 +1,4 @@
-OPEN DOWNLOAD MANAGER — RUST EDITION 3.0.0
+OPEN DOWNLOAD MANAGER — RUST EDITION 0.2.0
 Windows 10 / 11, 64-bit
 
 Run OpenDownloadManager.exe. The application is native Rust, with the same

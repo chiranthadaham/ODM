@@ -120,7 +120,7 @@ pub fn request(
     let config = engine.network.lock().unwrap().clone();
     let proxy = config.proxy.strip_prefix("http://").unwrap_or("");
     let agent = if d.user_agent.is_empty() {
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) OpenDownloadManager/3.0"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) OpenDownloadManager/0.2"
     } else {
         &d.user_agent
     };

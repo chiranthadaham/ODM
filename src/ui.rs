@@ -742,7 +742,7 @@ impl App {
                 .retain(|j| j.active.load(O::Relaxed) || j.state() == QUEUED),
             117 => open(self, Kind::Settings),
             118 => {
-                MessageBoxW(self.h,wide("Open Download Manager 3.0.0\nNative Rust edition\n\nMIT licensed. Third-party notices are included in the licenses folder.").as_ptr(),wide("About Open Download Manager").as_ptr(),MB_OK);
+                MessageBoxW(self.h,wide("Open Download Manager 0.2.0\nNative Rust edition\n\nMIT licensed. Third-party notices are included in the licenses folder.").as_ptr(),wide("About Open Download Manager").as_ptr(),MB_OK);
             }
             173 => {
                 if let Some(j) = selected {

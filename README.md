@@ -3,7 +3,7 @@
   <h1>Open Download Manager</h1>
   <p>A native Windows download manager, rebuilt in Rust.</p>
   <p>Parallel downloads · Browser integration · Video downloads</p>
-  <img src="https://img.shields.io/badge/version-3.0.0-007AFF" alt="Version 3.0.0">
+  <img src="https://img.shields.io/badge/version-0.2.0-007AFF" alt="Version 0.2.0">
   <img src="https://img.shields.io/badge/language-Rust-orange" alt="Rust">
   <img src="https://img.shields.io/badge/platform-Windows%20x64-0078D4" alt="Windows x64">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license">
