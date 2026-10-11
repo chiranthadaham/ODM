@@ -1,0 +1,8 @@
+{
+  "name": "icu_normalizer_data",
+  "version": "2.3.0",
+  "license": "Unicode-3.0",
+  "repository": "https://github.com/unicode-org/icu4x",
+  "source": "registry+https://github.com/rust-lang/crates.io-index",
+  "checksum": "1563da1ed3e0b3bf3d74c9b85917ac9c56464d2f57242270c09c9e752f8021a0"
+}

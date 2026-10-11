@@ -1,0 +1,8 @@
+{
+  "name": "aho-corasick",
+  "version": "1.1.5",
+  "license": "Unlicense OR MIT",
+  "repository": "https://github.com/BurntSushi/aho-corasick",
+  "source": "registry+https://github.com/rust-lang/crates.io-index",
+  "checksum": "c982642fa9e8606056828ee9a8505737230110bb1099153c79efe865c59d12ba"
+}

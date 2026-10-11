@@ -1,0 +1,8 @@
+{
+  "name": "syn",
+  "version": "3.0.7",
+  "license": "MIT OR Apache-2.0",
+  "repository": "https://github.com/dtolnay/syn",
+  "source": "registry+https://github.com/rust-lang/crates.io-index",
+  "checksum": "d62a2e0561533f2ca2561d0cf27fd9fedb640a1bf2616ff5d5c80d99017faadc"
+}

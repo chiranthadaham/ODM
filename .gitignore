@@ -1,25 +1,7 @@
-# Build products
-*.exe
-*.dll
-*.res
-*.obj
-*.o
-*.cab
-*.zip
-*.xpi
-video-tools.index
-video-runtime/
-.zig-cache/
-zig-out/
-# Machine-specific native registrations and application state
-**/native-host.json
-queue.dat*
-network.dat
-*.partial
-*.segments/
+/target/
 *.result.txt
-# Python and editor caches
+*.part
+*.segments/
+*.tmp
 __pycache__/
-*.pyc
-.vscode/
-.idea/
+native-host.json

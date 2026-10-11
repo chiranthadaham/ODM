@@ -7,9 +7,9 @@ def start_dialog_driver():
         u.GetDlgItem.argtypes=[w.HWND,ctypes.c_int];u.GetDlgItem.restype=w.HWND
         u.PostMessageW.argtypes=[w.HWND,w.UINT,w.WPARAM,w.LPARAM]
         while True:
-            h=u.FindWindowW('ODMWorkflow','New download — Save and Start')
+            h=u.FindWindowW('ODMWorkflowRust','New download — Save and Start')
             if h:u.PostMessageW(h,0x111,203,0)
-            h=u.FindWindowW('ODMWorkflow','Download complete')
+            h=u.FindWindowW('ODMWorkflowRust','Download complete')
             if h:u.PostMessageW(h,0x111,2,0)
             time.sleep(.1)
     threading.Thread(target=run,daemon=True).start()

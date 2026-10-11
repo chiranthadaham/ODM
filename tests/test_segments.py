@@ -1,7 +1,7 @@
 """Exercise real parallel range transfers, resume and defensive fallback."""
 import http.server
 from pathlib import Path
-import subprocess,sys,tempfile,threading,time,unittest
+import subprocess,sys,tempfile,threading,time,unittest,json
 EXE=Path(sys.argv.pop(1)).resolve()
 DATA=bytes(range(251))*9000
 class Server(http.server.BaseHTTPRequestHandler):
@@ -62,4 +62,10 @@ class Tests(unittest.TestCase):
         code,report=self.download();self.assertEqual(code,0,report);self.assertEqual(self.target.read_bytes(),DATA[::-1])
     def test_single_connection_setting(self):
         code,report=self.download('/ranges','--connections','1');self.assertEqual(code,0,report);self.assertEqual(self.target.read_bytes(),DATA);self.assertIn('Connections: 1',report)
+    def test_resumes_cpp_partial_metadata(self):
+        folder=Path(str(self.target)+'.segments');folder.mkdir()
+        (folder/'metadata.txt').write_text(json.dumps(self.url+'/ranges')+'\n'+json.dumps('"v1"')+f'\n{len(DATA)} 8\n',encoding='utf-8')
+        first=len(DATA)//8;(folder/'0.part').write_bytes(DATA[:first]);(folder/'1.part').write_bytes(DATA[first:first+32000])
+        code,report=self.download();self.assertEqual(code,0,report);self.assertEqual(self.target.read_bytes(),DATA)
+        self.assertTrue(any(r[1].startswith(f'bytes={first+32000}-')for r in Server.requests))
 if __name__=='__main__':unittest.main()

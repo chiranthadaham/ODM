@@ -1,0 +1,8 @@
+{
+  "name": "icu_collections",
+  "version": "2.3.0",
+  "license": "Unicode-3.0",
+  "repository": "https://github.com/unicode-org/icu4x",
+  "source": "registry+https://github.com/rust-lang/crates.io-index",
+  "checksum": "fa68d21081c4a05d5a901a1c62add574c77048b6a1c67be3b50ce0b60d4ca513"
+}

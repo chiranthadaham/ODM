@@ -1,0 +1,8 @@
+{
+  "name": "tinystr",
+  "version": "0.8.4",
+  "license": "Unicode-3.0",
+  "repository": "https://github.com/unicode-org/icu4x",
+  "source": "registry+https://github.com/rust-lang/crates.io-index",
+  "checksum": "b1e27c91459209c2986af3dcf603a5a74a4368754ce37414f59acc971167f643"
+}

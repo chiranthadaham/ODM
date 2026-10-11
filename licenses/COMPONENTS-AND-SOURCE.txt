@@ -1,0 +1,20 @@
+yt-dlp 2026.09.27.232945
+https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/tag/2026.09.27.232945
+Source: https://github.com/yt-dlp/yt-dlp-nightly-builds
+
+deno v2.9.7
+https://github.com/denoland/deno/releases/tag/v2.9.7
+Source: https://github.com/denoland/deno
+
+ffmpeg latest
+https://github.com/yt-dlp/FFmpeg-Builds/releases/tag/latest
+Source: https://github.com/yt-dlp/FFmpeg-Builds
+
+yt-dlp source: https://github.com/yt-dlp/yt-dlp
+FFmpeg source: https://git.ffmpeg.org/ffmpeg.git
+
+Rust application core: original MIT-licensed ODM rewritten in Rust 1.99.0.
+Rust dependencies: pinned in Cargo.lock; sources and licenses in Rust-dependencies.json and Rust-dependencies/.
+Rust standard library: https://github.com/rust-lang/rust; notices in Rust-standard-library-copyright.html.
+Embedded FFmpeg build: N-127264-gf5d4fd186c-20261009.
+FFmpeg source revision: https://github.com/FFmpeg/FFmpeg/tree/f5d4fd186c

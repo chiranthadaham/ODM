@@ -1,0 +1,29 @@
+[
+  {
+    "component": "yt-dlp",
+    "repository": "yt-dlp/yt-dlp-nightly-builds",
+    "version": "2026.09.27.232945",
+    "asset": "yt-dlp.exe",
+    "url": "https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/download/2026.09.27.232945/yt-dlp.exe",
+    "sha256": "997c00e8f8ed91431b1ddaeeae519743602beb0b6df0903194a2632e57df1b31",
+    "release": "https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/tag/2026.09.27.232945"
+  },
+  {
+    "component": "deno",
+    "repository": "denoland/deno",
+    "version": "v2.9.7",
+    "asset": "deno-x86_64-pc-windows-msvc.zip",
+    "url": "https://github.com/denoland/deno/releases/download/v2.9.7/deno-x86_64-pc-windows-msvc.zip",
+    "sha256": "a0c3101b4158d1dfb7d6a78a7bf0f3de80c96bb423c152beec8beb22786f2238",
+    "release": "https://github.com/denoland/deno/releases/tag/v2.9.7"
+  },
+  {
+    "component": "ffmpeg",
+    "repository": "yt-dlp/FFmpeg-Builds",
+    "version": "latest",
+    "asset": "ffmpeg-master-latest-win64-gpl-shared.zip",
+    "url": "https://github.com/yt-dlp/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-gpl-shared.zip",
+    "sha256": "127886e83fdcb976bf8e404a8bfeee4cc8694bf8fdfdd61bf042e3566431bc91",
+    "release": "https://github.com/yt-dlp/FFmpeg-Builds/releases/tag/latest"
+  }
+]

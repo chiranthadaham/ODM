@@ -1,114 +1,148 @@
 <div align="center">
-  <img src="app-icon.svg" alt="Open Download Manager logo" width="112" height="112">
+  <img src="assets/logo.svg" width="96" alt="Open Download Manager logo">
   <h1>Open Download Manager</h1>
-  <p><strong>Your downloads. One simple place.</strong></p>
-  <p>A native Windows download manager with segmented transfers,<br>video downloads, and Firefox &amp; Chromium integration.</p>
-  <p>
-    <img src="https://img.shields.io/badge/platform-Windows_x64-2563eb?style=flat-square" alt="Windows x64">
-    <img src="https://img.shields.io/badge/language-C%2B%2B17-475569?style=flat-square" alt="C++17">
-    <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-15803d?style=flat-square" alt="MIT license"></a>
-  </p>
-  <p>
-    <a href="#features">Features</a> &nbsp; · &nbsp;
-    <a href="#getting-started">Getting started</a> &nbsp; · &nbsp;
-    <a href="#build-on-windows">Build</a> &nbsp; · &nbsp;
-    <a href="#browser-extensions">Extensions</a> &nbsp; · &nbsp;
-    <a href="#tests">Tests</a>
-  </p>
+  <p>A native Windows download manager, rebuilt in Rust.</p>
+  <p>Parallel downloads · Browser integration · Video downloads</p>
+  <img src="https://img.shields.io/badge/version-3.0.0-007AFF" alt="Version 3.0.0">
+  <img src="https://img.shields.io/badge/language-Rust-orange" alt="Rust">
+  <img src="https://img.shields.io/badge/platform-Windows%20x64-0078D4" alt="Windows x64">
+  <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license">
 </div>
 
----
+<br>
+
+**Open Download Manager (ODM)** brings segmented downloads, a persistent queue, and browser capture together in a clean desktop interface. This edition rewrites the Windows application in Rust while retaining the familiar controls and download workflows.
+
+The executable is compiled from Rust. The Windows UI, transfer engine, queue storage, settings, system tray, and browser messaging bridge are implemented in Rust. Browser extensions use JavaScript; video extraction and merging use bundled yt-dlp, Deno, and FFmpeg tools.
 
 ## Features
 
-| | What you get |
-| :--- | :--- |
-| **Segmented downloads** | Validated parallel HTTP/HTTPS transfers with automatic fallback when a server cannot safely support ranges. |
-| **Pause & resume** | Persistent download queues and validated partial-file recovery. |
-| **Browser integration** | Firefox and Chromium extensions capture downloads and offer a selectable video menu. |
-| **Video support** | Supported video and HLS downloads through optional yt-dlp, Deno and FFmpeg tools. |
-| **Live controls** | Change speed limits and connection settings while downloads are running. |
-| **A focused interface** | Separate start, progress and completion windows, sortable columns, and a notification-area icon. |
-| **Organized downloads** | File types, status, progress, speed, and local date and time added in one queue. |
-| **Connection options** | Proxy and authentication settings; FTP and SOCKS transfers through Windows curl. |
+| | What you can do |
+| --- | --- |
+| **Parallel downloads** | Download HTTP/HTTPS files in segments, adjust connection counts, and use sequential fallback when ranges are unavailable. |
+| **Pause and resume** | Continue validated partial downloads and restore the queue after restarting the app. |
+| **Browser integration** | Capture supported downloads in Firefox and Chromium browsers, with a separate save/start prompt. |
+| **Video downloads** | Download supported YouTube, HLS, and DASH media using the bundled video tools. |
+| **Live controls** | Change connection counts, simultaneous download limits, and per-download speed limits. |
+| **Organized queue** | Sort by file, status, progress, size, speed, connections, type, or date added. Import/export URLs and renew download links. |
+| **Native interface** | Rounded controls, icon toolbar, right-click actions, independent progress/completion windows, and system tray behavior. |
+| **Network options** | HTTP/HTTPS, FTP/FTPS, HTTP and SOCKS proxies, and server/proxy authentication through Windows networking or Windows curl. |
+| **File protection** | Validate resumed ranges and assemble segmented downloads without overwriting an existing destination. |
 
 ## Getting started
 
-1. **Launch** `OpenDownloadManager.exe` after building the app.
-2. **Add a link** with the **+** button, or capture a download using a browser extension.
-3. **Choose a location** and start the download in its separate window.
-4. **Keep browsing** while ODM runs in the notification area, then open the completed file from the completion prompt.
+**Requirements:** Windows 10 or Windows 11, 64-bit.
 
-The trash button removes a selected inactive entry. **Clear all** removes inactive entries from the queue. Downloaded files stay on disk.
+1. Open `OpenDownloadManager.exe` from the binary package.
+2. Click **+**, paste a download link, and choose a destination.
+3. Start the download. Use the toolbar or right-click menu to manage it.
 
-> **Compatibility:** Site authentication, browser verification, expiring links and DRM can prevent downloads. More connections do not guarantee higher speed. Existing queue entries without a recorded added time display a dash.
+Closing the main window keeps ODM in the system tray. Use the tray menu to reopen or exit it. Video tools are embedded and extracted into a verified per-user cache when first needed; Rust is not required to run the application.
 
-## Build on Windows
+### Connect your browser
 
-Use PowerShell, Zig **0.15.2** (the tested compiler) and Windows 10/11 x64. Put `zig.exe` on PATH or pass its full path:
+The binary package includes `Firefox` and `Chromium` folders. Run `Install.cmd` in the appropriate folder, then follow its instructions to load the extension and register the app.
 
-```powershell
-.\build.ps1 -Compiler zig -Output "$PWD\OpenDownloadManager.exe"
-```
+Browser downloads open separate confirmation and progress windows while the main application stays in the tray. Website access restrictions, login requirements, DRM, and browser verification can affect capture or downloads; browser fallback remains available.
 
-This builds the native app without bundled video tools. No Visual Studio installation is required. The application uses Windows system libraries and the included `json.hpp` dependency.
+## Build from source
 
-### Build with video tools
+Run the following commands from the repository root, which should contain `Cargo.toml` and this README.
 
-Python 3 and network access are needed to fetch upstream helper releases:
+### Retrieve bundled assets
 
-```powershell
-python .\provision-video.py
-pwsh -File .\bundle-video.ps1
-.\build.ps1 -Compiler zig -Output "$PWD\OpenDownloadManager.exe"
-```
-
-Run the cabinet bundling script with PowerShell 7 (`pwsh`); it uses Windows `makecab.exe`. The provisioning script downloads current releases, records versions/hashes under `video-runtime`, and collects notices. It does not pin the exact helper versions used by an older release, so rebuilding can change video behavior and does not guarantee a byte-identical EXE.
-
-Generated tools, cabinets and executables are excluded from Git. Keep the generated licenses with any portable binary distribution. See `THIRD_PARTY.md` for dependency and source information.
-
-## Browser extensions
-
-After building `OpenDownloadManager.exe` at the repository root:
-
-1. Run `firefox-integration/Install.cmd` and/or `chromium-integration/Install.cmd` to register this user's native host. These scripts generate machine-specific `native-host.json` files.
-2. Firefox: open `about:debugging`, choose **This Firefox → Load Temporary Add-on**, and select `firefox-extension/manifest.json`. Temporary add-ons must be reloaded after browser restarts; permanent installation requires Mozilla signing.
-3. Chromium: open `chrome://extensions` (or your browser's equivalent), enable Developer mode, choose **Load unpacked**, and select `chromium-extension`.
-4. Refresh website tabs after loading or updating the extension.
-
-The unpacked Chromium extension ID is `jancefngmifbnaldahilleoinncjppjh`. Re-run the registration scripts if the application folder moves. The extensions validate access before transferring a download to the app; browser fallback remains available when app access fails.
-
-## Tests
-
-The following controlled transfer tests use local HTTP servers and temporary folders:
+The video-tools archive is tracked with Git LFS. After cloning:
 
 ```powershell
-python .\tests\test_downloads.py .\OpenDownloadManager.exe
-python .\tests\test_segments.py .\OpenDownloadManager.exe
-python .\tests\test_http_errors.py .\OpenDownloadManager.exe
-python .\tests\test_optimizations.py .\OpenDownloadManager.exe
+git lfs install
+git lfs pull
 ```
 
-These tests cover native downloads, resume, segmented transfers, HTTP errors and fallback behavior. They do not certify every website or browser button.
+### Option 1: Windows SDK / MSVC
+
+Install Rust for Windows and Visual Studio Build Tools with **Desktop development with C++** and the Windows SDK. These provide the Windows linker, libraries, and resource compiler; the application itself is written in Rust.
+
+From Developer PowerShell:
+
+```powershell
+.\build.ps1
+```
+
+### Option 2: GNU toolchain / Zig
+
+Install Rust's GNU toolchain and Zig 0.15.2:
+
+```powershell
+rustup toolchain install stable-x86_64-pc-windows-gnu
+.\build-gnu.ps1 -Zig C:\tools\zig.exe
+```
+
+Both scripts build with `Cargo.lock` and create a **Bin** folder beside the source directory, containing the executable, browser integrations, and licenses. The GNU/Zig build was used for the validated Windows release.
 
 ## Project structure
 
-| Files | Purpose |
-| --- | --- |
-| `main.cpp` | Startup, queue persistence and transfer coordination |
-| `segmented.h`, `network.h`, `network_options.h` | Transfers, proxies and authentication |
-| `ui.h`, `workflow.h` | Queue, settings, start/progress/completion windows |
-| `video.h`, `runtime.h` | Video helpers and verified runtime extraction |
-| `browser_bridge.h`, `download_redirect.h` | Browser integration and redirect handling |
-| `firefox-extension`, `chromium-extension` | Browser add-ons |
-| `*-integration` | Native-host setup scripts |
-| `tests/` | Separate download test scripts and test helpers |
-| `app.*`, `bundle.rc` | Windows application resources |
+```text
+Source/
+├── src/                 Rust application and native Windows UI
+├── browser/             Firefox and Chromium extensions
+├── assets/              Logo, icon, manifest, and video-tools archive
+├── tests/               Integration tests
+├── licenses/            Third-party notices
+├── Cargo.toml
+├── Cargo.lock
+├── build.ps1
+├── build-gnu.ps1
+└── VALIDATION.md
 
-## License
+Bin/                     Created beside Source when building
+├── OpenDownloadManager.exe
+├── Firefox/
+├── Chromium/
+└── licenses/
+```
 
-Original ODM source is licensed under the [MIT License](LICENSE). Third-party components retain their own licenses; see [third-party notices](THIRD_PARTY.md) and the `third-party-licenses` folder.
+Upload the **contents of Source** to the repository root so the logo, links, and build commands work as shown. Publish the compiled binary package as a GitHub Release asset. Keep the large video-tools archive under Git LFS; do not upload it as a regular Git object.
 
----
+## Testing
 
-<p align="center"><sub>Built with C++17 · Win32 · WinHTTP</sub></p>
+The initial Rust release passed **41 automated checks**, covering downloads, segmented resume, error recovery, authentication, proxies, UI workflows, video processing, and large-file assembly. A real YouTube download was also verified with audio and video tracks.
+
+See [VALIDATION.md](VALIDATION.md) for results and testing limits, and [tests/README.md](tests/README.md) for integration-test instructions.
+
+Core tests:
+
+```powershell
+cargo test --locked
+```
+
+Example integration tests, after building:
+
+```powershell
+python tests/test_downloads.py ../Bin/OpenDownloadManager.exe
+python tests/test_segments.py ../Bin/OpenDownloadManager.exe
+python tests/test_ui.py ../Bin/OpenDownloadManager.exe
+python tests/test_transports.py ../Bin/OpenDownloadManager.exe
+python tests/test_video.py ../Bin/OpenDownloadManager.exe
+```
+
+Python is used only for testing. The local HLS test needs FFmpeg/FFprobe from the verified runtime cache, or a tools folder supplied through `ODM_TEST_TOOLS`. Test downloads and build caches are kept out of the binary package.
+
+## Saved data and migration
+
+Queue data and Windows-protected credentials are stored in:
+
+```text
+%LOCALAPPDATA%\OpenDownloadManagerRust
+```
+
+On first run, ODM can migrate the previous C++ edition's saved queue and connection settings without modifying its saved data. Previously active downloads remain paused until resumed. Avoid running both editions against the same partial download at the same time.
+
+## Contributing
+
+Bug reports and pull requests are welcome. For download issues, include the app version, browser version, error message, and a publicly accessible example URL when possible. Remove cookies, passwords, and private links from reports.
+
+## License and acknowledgements
+
+The Rust application is available under the [MIT License](LICENSE). Bundled helpers and dependencies retain their own licenses and notices in [licenses/](licenses/).
+
+ODM uses Windows APIs and Rust libraries for the desktop application, with **yt-dlp**, **Deno**, and **FFmpeg** for supported video workflows. Browser extensions remain JavaScript components.

@@ -1,0 +1,8 @@
+{
+  "name": "smallvec",
+  "version": "1.16.3",
+  "license": "MIT OR Apache-2.0",
+  "repository": "https://github.com/servo/rust-smallvec",
+  "source": "registry+https://github.com/rust-lang/crates.io-index",
+  "checksum": "5b3dc8af474f516a851ff4bd12db780f948b9250ad37211e4eec0bccea54e01b"
+}
