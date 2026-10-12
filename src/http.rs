@@ -362,12 +362,21 @@ pub fn download_response(
     let mut buffer = vec![0u8; 256 * 1024];
     let mut received = 0u64;
     let mut checkpoint = Instant::now();
+    let mut durable = Instant::now();
     let mut previous = j.done.load(Ordering::Relaxed);
     loop {
         if j.stopped() || abort.is_some_and(|a| a.load(Ordering::Relaxed)) {
             break;
         }
-        let n = response.read(&mut buffer)?;
+        let n = match response.read(&mut buffer) {
+            Ok(n) => n,
+            Err(error) => {
+                output
+                    .sync_data()
+                    .map_err(|e| format!("Cannot save partial download: {e}"))?;
+                return Err(error);
+            }
+        };
         if n == 0 {
             break;
         }
@@ -393,8 +402,17 @@ pub fn download_response(
             checkpoint = Instant::now();
         }
         engine.pace(j, n as u64);
+        if durable.elapsed() >= Duration::from_secs(5) {
+            output
+                .sync_data()
+                .map_err(|e| format!("Cannot checkpoint partial download: {e}"))?;
+            durable = Instant::now();
+        }
     }
     output.flush().map_err(|e| e.to_string())?;
+    output
+        .sync_data()
+        .map_err(|e| format!("Cannot save partial download: {e}"))?;
     if !j.stopped()
         && !abort.is_some_and(|a| a.load(Ordering::Relaxed))
         && expected.is_some_and(|n| received != n)
@@ -501,6 +519,7 @@ pub fn check_access(
     Err("Too many download redirects".into())
 }
 pub fn finalize(engine: &Engine, j: &Job, temporary: &Path) -> Result<(), String> {
+    crate::integrity::verify_download(engine, j, temporary)?;
     let original = j.snapshot().path;
     let mut reserved = engine.reservations.lock().unwrap();
     for n in 0..10000 {

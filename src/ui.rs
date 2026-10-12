@@ -11,6 +11,7 @@ use std::{
 enum FileResult {
     Import(Result<Vec<String>, String>),
     Export(Result<(), String>),
+    Integrity(Arc<Job>, String, Result<String, String>),
 }
 pub struct App {
     pub engine: Arc<Engine>,
@@ -53,7 +54,7 @@ unsafe fn draw_cell(a: &App, d: &mut NMLVCUSTOMDRAW) -> isize {
                     "No downloads yet\nClick + to add a download.",
                     r,
                     a.font,
-                    paint::MUTED,
+                    paint::muted(),
                     DT_CENTER,
                 );
             }
@@ -89,7 +90,15 @@ unsafe fn draw_cell(a: &App, d: &mut NMLVCUSTOMDRAW) -> isize {
             paint::fill(
                 d.nmcd.hdc,
                 r,
-                if selected { 0x00ffe7d1 } else { paint::WHITE },
+                if selected {
+                    if crate::theme::dark() {
+                        0x0060442c
+                    } else {
+                        0x00ffe7d1
+                    }
+                } else {
+                    paint::white()
+                },
             );
             if col != 1 && col != 2 {
                 r.left += 12;
@@ -100,7 +109,7 @@ unsafe fn draw_cell(a: &App, d: &mut NMLVCUSTOMDRAW) -> isize {
                         &from_wide(value),
                         r,
                         a.font,
-                        paint::INK,
+                        paint::ink(),
                         DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX,
                     );
                 }
@@ -113,7 +122,7 @@ unsafe fn draw_cell(a: &App, d: &mut NMLVCUSTOMDRAW) -> isize {
                     crate::model::ERROR => (0x00e5e5ff, 0x003c38e5),
                     DOWNLOADING => (0x00fff1df, paint::BLUE),
                     PAUSED => (0x00dff4ff, 0x002d7490),
-                    _ => (0x00f6f1ed, paint::MUTED),
+                    _ => (0x00f6f1ed, paint::muted()),
                 };
                 paint::rounded(d.nmcd.hdc, r, surface, surface, 6.);
                 paint::label(
@@ -121,7 +130,11 @@ unsafe fn draw_cell(a: &App, d: &mut NMLVCUSTOMDRAW) -> isize {
                     &from_wide(&a.rows[row][1]),
                     r,
                     a.small,
-                    ink,
+                    if crate::theme::dark() {
+                        paint::ink()
+                    } else {
+                        ink
+                    },
                     DT_CENTER | DT_VCENTER | DT_SINGLELINE,
                 );
             } else {
@@ -154,7 +167,7 @@ unsafe fn draw_cell(a: &App, d: &mut NMLVCUSTOMDRAW) -> isize {
                         ..r
                     },
                     a.small,
-                    paint::INK,
+                    paint::ink(),
                     DT_CENTER | DT_VCENTER | DT_SINGLELINE,
                 );
             }
@@ -358,6 +371,33 @@ pub unsafe fn folder(h: HWND) -> Option<PathBuf> {
     }
 }
 impl App {
+    unsafe fn apply_theme(&mut self) {
+        DeleteObject(self.brush);
+        self.brush = CreateSolidBrush(paint::bg());
+        SetWindowTextW(GetDlgItem(self.h, 126), wide(crate::theme::name()).as_ptr());
+        SendMessageW(self.list, LVM_SETBKCOLOR, 0, paint::white() as isize);
+        SendMessageW(self.list, LVM_SETTEXTBKCOLOR, 0, paint::white() as isize);
+        SendMessageW(self.list, LVM_SETTEXTCOLOR, 0, paint::ink() as isize);
+        #[link(name = "uxtheme", kind = "raw-dylib")]
+        extern "system" {
+            fn SetWindowTheme(h: HWND, app: *const u16, id: *const u16) -> i32;
+        }
+        let native_theme = wide(if crate::theme::dark() {
+            "DarkMode_Explorer"
+        } else {
+            "Explorer"
+        });
+        SetWindowTheme(self.list, native_theme.as_ptr(), null());
+        let header = SendMessageW(self.list, LVM_GETHEADER, 0, 0) as HWND;
+        SetWindowTheme(header, native_theme.as_ptr(), null());
+        SetWindowSubclass(header, Some(paint::header_proc), 500, 0);
+        paint::modern(self.h);
+        for &dialog in &self.dialogs {
+            paint::modern(dialog);
+            RedrawWindow(dialog, null(), null_mut(), RDW_INVALIDATE | RDW_ALLCHILDREN);
+        }
+        RedrawWindow(self.h, null(), null_mut(), RDW_INVALIDATE | RDW_ALLCHILDREN);
+    }
     unsafe fn selected_jobs(&self) -> Vec<Arc<Job>> {
         let mut jobs = Vec::new();
         let mut at = -1isize;
@@ -408,6 +448,21 @@ impl App {
     pub unsafe fn save(&self) {
         self.store.save(&self.engine, &self.jobs)
     }
+    pub unsafe fn verify_file(&mut self, job: Arc<Job>, expected: String) {
+        if job.active.load(O::Acquire) || job.state() != COMPLETE {
+            message(self.h, "Finish the download before verifying its file.");
+            return;
+        }
+        if job.snapshot().integrity_status == "Calculating SHA-256…" {
+            return;
+        }
+        job.details.lock().unwrap().integrity_status = "Calculating SHA-256…".into();
+        let tx = self.io_tx.clone();
+        self.workers.push(std::thread::spawn(move || {
+            let result = crate::integrity::hash(&job.snapshot().path, None);
+            let _ = tx.send(FileResult::Integrity(job, expected, result));
+        }));
+    }
     pub unsafe fn add(
         &mut self,
         url: String,
@@ -420,12 +475,18 @@ impl App {
                     .into(),
             );
         }
+        let expected = crate::integrity::normalize(context["sha256"].as_str().unwrap_or(""))?;
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)
+                .map_err(|e| format!("Cannot create download folder: {e}"))?;
+        }
         let path = self.engine.reserve(&path)?;
         let j = Job::new(Details {
             url,
             path,
             user_agent: context["userAgent"].as_str().unwrap_or("").into(),
             referer: context["referer"].as_str().unwrap_or("").into(),
+            expected_sha256: expected,
             ..Default::default()
         });
         self.jobs.push(j.clone());
@@ -610,6 +671,26 @@ impl App {
         self.workers.retain_mut(|t| !t.is_finished());
         for result in self.io_rx.try_iter().collect::<Vec<_>>() {
             match result {
+                FileResult::Integrity(job, expected, result) => {
+                    let mut details = job.details.lock().unwrap();
+                    match result {
+                        Ok(actual) => {
+                            details.expected_sha256 = expected.clone();
+                            details.integrity_status = if expected.is_empty() {
+                                "SHA-256 calculated (no reference checksum supplied)"
+                            } else if actual == expected {
+                                "SHA-256 verified"
+                            } else {
+                                "Mismatch — do not use this file"
+                            }
+                            .into();
+                            details.actual_sha256 = actual;
+                        }
+                        Err(error) => details.integrity_status = error,
+                    }
+                    drop(details);
+                    self.save();
+                }
                 FileResult::Import(result) => {
                     self.importing = false;
                     match result {
@@ -757,7 +838,21 @@ impl App {
                 .jobs
                 .retain(|j| j.active.load(O::Relaxed) || j.state() == QUEUED),
             117 => open(self, Kind::Settings),
+            174 => {
+                if let Some(job) = selected {
+                    open(self, Kind::Checksum(job));
+                }
+            }
             124 => open(self, Kind::BrowserPlugins),
+            125 => {
+                if let Err(error) = crate::update::check() {
+                    message(self.h, &error);
+                }
+            }
+            126 => {
+                crate::theme::cycle();
+                self.apply_theme();
+            }
             118 => {
                 MessageBoxW(self.h,wide("Open Download Manager 0.2.0\nNative Rust edition\n\nMIT licensed. Third-party notices are included in the licenses folder.").as_ptr(),wide("About Open Download Manager").as_ptr(),MB_OK);
             }
@@ -895,8 +990,12 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                 );
             }
             button(h, "Clear all", 121, 1000, 20, 110, a.font);
-            button(h, "Settings", 117, 40, 700, 120, a.font);
+            let settings = button(h, "Settings", 117, 24, 700, 44, a.font);
+            a.tip(settings, "Settings");
             button(h, "Browser plug-in", 124, 152, 700, 160, a.font);
+            button(h, "Check for updates", 125, 320, 700, 156, a.font);
+            let theme = button(h, crate::theme::name(), 126, 418, 700, 44, a.font);
+            a.tip(theme, "Switch theme: System / Light / Dark");
             button(h, "About", 118, 1000, 700, 96, a.font);
             label(h, "", 144, 28, 760, 1100, 28, a.small);
             a.list = child(
@@ -962,6 +1061,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
             n.szTip[..t.len()].copy_from_slice(&t);
             Shell_NotifyIconW(NIM_ADD, &n);
             SetTimer(h, 1, 250, None);
+            a.apply_theme();
             0
         }
         WM_GETMINMAXINFO => {
@@ -989,21 +1089,32 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                 SendMessageW(a.list, LVM_SETCOLUMNWIDTH, column, *width as isize);
             }
             MoveWindow(GetDlgItem(h, 121), w - 134, 20, 110, 36, 1);
-            MoveWindow(GetDlgItem(h, 117), 24, height - 76, 112, 36, 1);
-            MoveWindow(GetDlgItem(h, 124), 148, height - 76, 160, 36, 1);
+            MoveWindow(GetDlgItem(h, 117), 24, height - 76, 44, 36, 1);
+            MoveWindow(GetDlgItem(h, 124), 80, height - 76, 160, 36, 1);
+            MoveWindow(GetDlgItem(h, 125), 252, height - 76, 156, 36, 1);
+            MoveWindow(GetDlgItem(h, 126), 420, height - 76, 44, 36, 1);
             MoveWindow(GetDlgItem(h, 118), w - 120, height - 76, 96, 36, 1);
             MoveWindow(
                 GetDlgItem(h, 144),
-                324,
+                480,
                 height - 70,
-                (w - 460).max(100),
+                (w - 616).max(0),
                 26,
                 1,
             );
             InvalidateRect(h, null(), 0);
             0
         }
+        WM_SETTINGCHANGE | WM_THEMECHANGED => {
+            if crate::theme::refresh() {
+                a.apply_theme();
+            }
+            0
+        }
         WM_TIMER => {
+            if a.ticks % 20 == 0 && crate::theme::refresh() {
+                a.apply_theme();
+            }
             a.tick();
             0
         }
@@ -1025,7 +1136,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
             1
         }
         WM_CTLCOLORSTATIC => {
-            SetTextColor(wp as HDC, paint::MUTED);
+            SetTextColor(wp as HDC, paint::muted());
             SetBkMode(wp as HDC, TRANSPARENT as i32);
             a.brush as isize
         }
@@ -1037,7 +1148,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                 } else {
                     None
                 },
-                paint::BG,
+                paint::bg(),
                 |dc| {
                     let mut r = RECT::default();
                     GetClientRect(h, &mut r);
@@ -1049,8 +1160,8 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                             right: r.right - 16,
                             bottom: r.bottom - 94,
                         },
-                        paint::WHITE,
-                        paint::BORDER,
+                        paint::white(),
+                        paint::border(),
                         12.,
                     );
                     paint::label(
@@ -1063,7 +1174,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                             bottom: 92,
                         },
                         a.bold,
-                        paint::INK,
+                        paint::ink(),
                         DT_SINGLELINE | DT_VCENTER,
                     );
                     let active = a.jobs.iter().filter(|j| j.active.load(O::Relaxed)).count();
@@ -1085,7 +1196,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                             bottom: 92,
                         },
                         a.small,
-                        paint::MUTED,
+                        paint::muted(),
                         DT_SINGLELINE | DT_VCENTER | DT_RIGHT,
                     );
                 },
@@ -1141,6 +1252,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                             (112, "Stop"),
                             (171, "Copy link"),
                             (173, "Renew link"),
+                            (174, "Verify SHA-256…"),
                             (172, "Remove download"),
                         ] {
                             AppendMenuW(m, MF_STRING, id, wide(s).as_ptr());
@@ -1231,6 +1343,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
     }
 }
 pub fn run(engine: Arc<Engine>, background: bool) {
+    crate::theme::init();
     let browser_plugins = std::env::args().any(|arg| arg == "--browser-plugins");
     unsafe {
         let mutex = Handle(CreateMutexW(
@@ -1260,7 +1373,7 @@ pub fn run(engine: Arc<Engine>, background: bool) {
             Ok(j) => j,
             Err(e) => {
                 message(null_mut(), &format!("Could not load saved queue: {e}"));
-                Vec::new()
+                return;
             }
         };
         for j in &jobs {
@@ -1280,7 +1393,7 @@ pub fn run(engine: Arc<Engine>, background: bool) {
             font: paint::font(16, FW_NORMAL),
             small: paint::font(13, FW_NORMAL),
             bold: paint::font(17, FW_SEMIBOLD),
-            brush: CreateSolidBrush(paint::BG),
+            brush: CreateSolidBrush(paint::bg()),
             dialogs: Vec::new(),
             workers: Vec::new(),
             rows: Vec::new(),

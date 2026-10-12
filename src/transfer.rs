@@ -33,6 +33,11 @@ fn save_meta(path: &Path, meta: &Metadata) -> Result<(), String> {
     let tmp = path.with_extension("tmp");
     std::fs::write(&tmp, serde_json::to_vec(meta).map_err(|e| e.to_string())?)
         .map_err(|e| e.to_string())?;
+    std::fs::OpenOptions::new()
+        .write(true)
+        .open(&tmp)
+        .and_then(|file| file.sync_all())
+        .map_err(|e| e.to_string())?;
     win::move_replace(&tmp, path)
 }
 fn clean_segments(folder: &Path) {
@@ -85,6 +90,9 @@ fn sequential(
             response = Some(r)
         }
     }
+    if existing > 0 && !append {
+        j.set_error("The server cannot safely resume this partial file (it changed or range requests are unavailable). Restarting from the beginning.".into());
+    }
     let response = match response {
         Some(r) => r,
         None => http::request(engine, j, url, None, None)?,
@@ -108,7 +116,8 @@ fn sequential(
     j.total.store(total.unwrap_or(0), Ordering::Relaxed);
     j.lanes.store(1, Ordering::Relaxed);
     j.details.lock().unwrap().etag = http::validator(&response);
-    let _ = std::fs::write(part.with_extension("part.validator"), &j.snapshot().etag);
+    std::fs::write(part.with_extension("part.validator"), &j.snapshot().etag)
+        .map_err(|e| format!("Cannot save resume information: {e}"))?;
     http::download_response(engine, j, response, &part, append, length, None)?;
     if j.stopped() {
         return Ok(());
@@ -216,7 +225,8 @@ fn http_transfer(engine: &Arc<Engine>, j: &Arc<Job>) -> Result<(), String> {
         .or_else(|| legacy_meta(&folder));
     let mut reuse = false;
     if let Some(saved) = old {
-        if saved.url == address
+        if !validator.is_empty()
+            && saved.url == address
             && saved.validator == validator
             && saved.total == total
             && (2..=128).contains(&saved.count)
@@ -227,6 +237,9 @@ fn http_transfer(engine: &Arc<Engine>, j: &Arc<Job>) -> Result<(), String> {
         }
     }
     if !reuse {
+        if folder.exists() {
+            j.set_error("Saved segments no longer match the server or have no stable validator. Restarting safely.".into());
+        }
         clean_segments(&folder)
     }
     std::fs::create_dir_all(&folder).map_err(|e| e.to_string())?;

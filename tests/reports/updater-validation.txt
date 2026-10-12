@@ -1,0 +1,1 @@
+PASS: updater syntax, newer/same/older versions, missing digest, foreign URL, and prerelease guards.

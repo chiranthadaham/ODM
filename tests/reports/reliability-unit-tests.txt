@@ -1,0 +1,15 @@
+   Compiling open-download-manager v0.2.0 (C:\Users\Administrator\Documents\Codex\2026-10-10\c-users-administrator-desktop-internet-download\work\ODM-Rust\Source)
+    Finished `release` profile [optimized] target(s) in 12.45s
+     Running unittests src\main.rs (work\ODM-Rust\Source\target\release\deps\OpenDownloadManager-87f79af5f3340140.exe)
+
+running 7 tests
+test tests::checksum_validation_and_category_paths ... ok
+test tests::duration_is_readable ... ok
+test tests::filename_reservations_follow_windows_case_rules ... ok
+test tests::invalid_urls_are_rejected ... ok
+test tests::quoting_handles_trailing_slashes ... ok
+test tests::ranges_are_bounded ... ok
+test tests::rate_change_discards_old_waits ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

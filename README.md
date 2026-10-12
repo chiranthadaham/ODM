@@ -165,3 +165,22 @@ Bug reports and pull requests are welcome. For download issues, include the app 
 The Rust application is available under the [MIT License](LICENSE). Bundled helpers and dependencies retain their own licenses and notices in [licenses/](licenses/).
 
 ODM uses Windows APIs and Rust libraries for the desktop application, with **yt-dlp**, **Deno**, and **FFmpeg** for supported video workflows. Browser extensions remain JavaScript components.
+
+## Updates
+
+Click **Check for updates** in the app to check this project's GitHub Releases. A newer stable Windows installer is downloaded and checked against GitHub's SHA-256 digest before installation. ODM pauses transfers and retains the queue and settings. See [updater instructions](updater/README.md) for publishing requirements. Update checks contact GitHub only when requested; GitHub receives standard connection information such as your IP address.
+
+
+## Appearance
+
+ODM follows the Windows app theme by default. Click **Theme: System** to cycle through **Light**, **Dark**, and **System**. The choice is saved locally and applies to the main window and app download dialogs.
+
+
+## Integrity, recovery, and file folders
+
+- **SHA-256:** paste an optional publisher checksum in the Save and Start dialog. A mismatch prevents completion and retains partial data. Right-click a completed download and choose **Verify SHA-256…** to calculate its checksum or compare it with a reference. A calculated hash without a trusted reference is not proof that a file is authentic.
+- **Automatic hashing:** Settings → **Calculate SHA-256 for every download**. This is optional because reading large files adds disk work. A supplied expected checksum is always verified regardless of this setting.
+- **Recovery:** queue writes are flushed and replaced atomically, with a previous valid backup. Damaged or missing queue files can recover from a valid pending write or backup. Recovered transfers remain paused. Partial file bytes and metadata are checkpointed. Resume rechecks server validators; changed files or servers without a safe resume validator restart rather than combine unrelated bytes. If every queue copy is unreadable, ODM preserves them and reports the problem instead of overwriting them with an empty queue.
+- **Folders:** Settings → **Use file-type subfolders for new downloads**. Save prompts suggest Videos, Audio, Documents, Archives, Images, Applications, or Other beneath the selected base folder. You can override the suggested path. Existing files are not moved; organization is off by default.
+
+Run `tests/test_reliability.py` on Windows with the compiled executable path after closing ODM. Tests use an isolated queue and local HTTP fixtures. They cover checksum success and rejection, server changes, stale segments, queue recovery, byte-range resume, folder suggestions, and persisted settings.

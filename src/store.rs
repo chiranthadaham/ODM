@@ -20,6 +20,10 @@ pub struct Queue {
     connections: usize,
     limit_kib: u64,
     max_active: usize,
+    #[serde(default)]
+    organize: bool,
+    #[serde(default)]
+    hash_downloads: bool,
     jobs: Vec<Row>,
 }
 pub struct Store {
@@ -38,7 +42,21 @@ impl Store {
                 let result = (|| {
                     let data = serde_json::to_vec(&queue).map_err(|e| e.to_string())?;
                     let tmp = path.with_extension("tmp");
-                    std::fs::write(&tmp, data).map_err(|e| e.to_string())?;
+                    use std::io::Write;
+                    let mut file = std::fs::File::create(&tmp).map_err(|e| e.to_string())?;
+                    file.write_all(&data).map_err(|e| e.to_string())?;
+                    file.sync_all().map_err(|e| e.to_string())?;
+                    drop(file);
+                    if read_queue(&path).is_ok() {
+                        let backup_tmp = path.with_extension("backup.tmp");
+                        std::fs::copy(&path, &backup_tmp).map_err(|e| e.to_string())?;
+                        std::fs::OpenOptions::new()
+                            .write(true)
+                            .open(&backup_tmp)
+                            .and_then(|f| f.sync_all())
+                            .map_err(|e| e.to_string())?;
+                        move_replace(&backup_tmp, &path.with_extension("backup.json"))?;
+                    }
                     move_replace(&tmp, &path)
                 })();
                 if let Err(e) = result {
@@ -72,6 +90,8 @@ impl Store {
             connections: engine.connections.load(Ordering::Relaxed),
             limit_kib: engine.limit_kib.load(Ordering::Relaxed),
             max_active: engine.max_active.load(Ordering::Relaxed),
+            organize: engine.organize.load(Ordering::Relaxed),
+            hash_downloads: engine.hash_downloads.load(Ordering::Relaxed),
             jobs,
         };
         if let Some(tx) = &self.sender {
@@ -103,19 +123,37 @@ fn restore(row: Row) -> Arc<Job> {
     job.done.store(row.done, Ordering::Relaxed);
     job.total.store(row.total, Ordering::Relaxed);
     job.notified.store(true, Ordering::Relaxed);
+    if job.state() == PAUSED && job.snapshot().error.is_empty() {
+        job.set_error("Saved download recovered. Resume to continue; if the server cannot safely resume, ODM starts this file again.".into());
+    }
     j
+}
+fn read_queue(path: &Path) -> Result<Queue, String> {
+    let file = std::fs::File::open(path).map_err(|e| e.to_string())?;
+    let mut bytes = Vec::new();
+    file.take(32 * 1024 * 1024 + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|e| e.to_string())?;
+    if bytes.len() > 32 * 1024 * 1024 {
+        return Err("Queue is too large".into());
+    }
+    let queue: Queue = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+    if queue.format != 1 || queue.jobs.len() > 10000 {
+        return Err("Invalid queue format".into());
+    }
+    Ok(queue)
 }
 pub fn load(engine: &Engine) -> Result<Vec<Arc<Job>>, String> {
     let path = engine.data.join("queue.json");
-    if path.exists() {
-        let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
-        if bytes.len() > 32 * 1024 * 1024 {
-            return Err("Queue is too large".into());
-        }
-        let queue: Queue = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
-        if queue.format != 1 || queue.jobs.len() > 10000 {
-            return Err("Invalid queue format".into());
-        }
+    let backup = path.with_extension("backup.json");
+    let pending = path.with_extension("tmp");
+    if path.exists() || backup.exists() || pending.exists() {
+        let (queue,recovered)=match read_queue(&path){
+            Ok(q)=>(q,false),
+            Err(primary)=> match read_queue(&pending).or_else(|_|read_queue(&backup)) {
+                Ok(q)=>(q,true),Err(_)=>return Err(format!("Saved queue could not be read; backup recovery also failed: {primary}. The files have been left untouched."))
+            }
+        };
         engine
             .connections
             .store(queue.connections.clamp(1, 16), Ordering::Relaxed);
@@ -123,15 +161,24 @@ pub fn load(engine: &Engine) -> Result<Vec<Arc<Job>>, String> {
         engine
             .max_active
             .store(queue.max_active.clamp(1, 8), Ordering::Relaxed);
-        return Ok(queue.jobs.into_iter().map(restore).collect());
+        engine.organize.store(queue.organize, Ordering::Relaxed);
+        engine
+            .hash_downloads
+            .store(queue.hash_downloads, Ordering::Relaxed);
+        let jobs: Vec<_> = queue.jobs.into_iter().map(restore).collect();
+        if recovered {
+            let _=std::fs::write(engine.data.join("recovery-notice.txt"),"The saved queue was recovered from a valid temporary file or backup. Incomplete downloads remain paused.");
+            for job in &jobs {
+                if job.state() != COMPLETE {
+                    job.set_error("Queue recovered from backup. Resume to check the server and continue safely.".into());
+                }
+            }
+        }
+        return Ok(jobs);
     }
     let custom = engine.data.join("queue.dat");
-    let old = Path::new(&std::env::var_os("LOCALAPPDATA").unwrap_or_default())
-        .join("OpenDownloadManagerCpp/queue.dat");
     if custom.exists() {
         read_legacy(engine, &custom)
-    } else if std::env::var_os("ODM_DATA_DIR").is_none() && old.exists() {
-        read_legacy(engine, &old)
     } else {
         Ok(Vec::new())
     }

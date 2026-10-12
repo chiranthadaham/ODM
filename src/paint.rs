@@ -1,11 +1,43 @@
+pub fn white() -> u32 {
+    if crate::theme::dark() {
+        0x00282420
+    } else {
+        0x00ffffff
+    }
+}
+pub fn muted() -> u32 {
+    if crate::theme::dark() {
+        0x00b9aaa0
+    } else {
+        0x00867568
+    }
+}
+pub fn border() -> u32 {
+    if crate::theme::dark() {
+        0x004b4138
+    } else {
+        0x00ede7e2
+    }
+}
+pub fn ink() -> u32 {
+    if crate::theme::dark() {
+        0x00f3ede7
+    } else {
+        0x003b291e
+    }
+}
+pub fn bg() -> u32 {
+    if crate::theme::dark() {
+        0x001b1815
+    } else {
+        0x00faf8f6
+    }
+}
 use crate::win::*;
 use std::sync::OnceLock;
-pub const BG: u32 = 0x00faf8f6;
-pub const INK: u32 = 0x003b291e;
-pub const MUTED: u32 = 0x00867568;
+
 pub const BLUE: u32 = 0x00ff7a00;
-pub const BORDER: u32 = 0x00ede7e2;
-pub const WHITE: u32 = 0x00ffffff;
+
 #[repr(C)]
 struct Startup {
     version: u32,
@@ -130,6 +162,19 @@ pub unsafe fn fill(dc: HDC, r: RECT, color: u32) {
     DeleteObject(b);
 }
 pub unsafe fn rounded(dc: HDC, r: RECT, fill_color: u32, stroke: u32, radius: f32) {
+    let tone = |c: u32| {
+        if crate::theme::dark()
+            && (c & 255) > 180
+            && ((c >> 8) & 255) > 180
+            && ((c >> 16) & 255) > 180
+        {
+            0x00443b33
+        } else {
+            c
+        }
+    };
+    let fill_color = tone(fill_color);
+    let stroke = tone(stroke);
     if r.right <= r.left || r.bottom <= r.top {
         return;
     }
@@ -185,6 +230,122 @@ pub unsafe fn icon(dc: HDC, box_: RECT, mut id: u32, color: u32, pause: bool) {
         g.line(x + a, y + b, x + c, y + d);
     };
     match id {
+        117 => {
+            for i in 0..32 {
+                let angle = (i as f32) * std::f32::consts::TAU / 32.;
+                let next = ((i + 1) as f32) * std::f32::consts::TAU / 32.;
+                let radius = if i % 4 == 1 || i % 4 == 2 { 9.5 } else { 7.5 };
+                let radius_next = if (i + 1) % 4 == 1 || (i + 1) % 4 == 2 {
+                    9.5
+                } else {
+                    7.5
+                };
+                g.line(
+                    x + 12. + radius * angle.cos(),
+                    y + 12. + radius * angle.sin(),
+                    x + 12. + radius_next * next.cos(),
+                    y + 12. + radius_next * next.sin(),
+                );
+            }
+            GdipClosePathFigure(g.p);
+            GdipStartPathFigure(g.p);
+            GdipAddPathArc(g.p, x + 8.5, y + 8.5, 7., 7., 0., 360.);
+        }
+        126 => {
+            if crate::theme::name() == "Theme: System" {
+                g.round(x + 3., y + 4., 18., 13., 2.);
+                line(12., 17., 12., 21.);
+                line(8., 21., 16., 21.);
+                GdipStartPathFigure(g.p);
+                if crate::theme::dark() {
+                    g.bezier([
+                        x + 13.,
+                        y + 6.5,
+                        x + 6.,
+                        y + 6.,
+                        x + 6.,
+                        y + 15.,
+                        x + 13.,
+                        y + 14.5,
+                    ]);
+                    g.bezier([
+                        x + 13.,
+                        y + 14.5,
+                        x + 15.,
+                        y + 14.,
+                        x + 16.,
+                        y + 12.5,
+                        x + 16.,
+                        y + 11.,
+                    ]);
+                    g.bezier([
+                        x + 16.,
+                        y + 11.,
+                        x + 11.,
+                        y + 12.5,
+                        x + 10.,
+                        y + 8.5,
+                        x + 13.,
+                        y + 6.5,
+                    ]);
+                    GdipClosePathFigure(g.p);
+                } else {
+                    GdipAddPathArc(g.p, x + 10., y + 8.5, 4., 4., 0., 360.);
+                    for i in 0..8 {
+                        let angle = i as f32 * std::f32::consts::TAU / 8.;
+                        line(
+                            12. + 3.5 * angle.cos(),
+                            10.5 + 3.5 * angle.sin(),
+                            12. + 4.5 * angle.cos(),
+                            10.5 + 4.5 * angle.sin(),
+                        );
+                    }
+                }
+            } else if crate::theme::dark() {
+                g.bezier([
+                    x + 14.,
+                    y + 3.,
+                    x + 1.,
+                    y + 1.,
+                    x + 1.,
+                    y + 23.,
+                    x + 15.,
+                    y + 21.,
+                ]);
+                g.bezier([
+                    x + 15.,
+                    y + 21.,
+                    x + 19.,
+                    y + 20.,
+                    x + 21.,
+                    y + 17.,
+                    x + 21.,
+                    y + 14.,
+                ]);
+                g.bezier([
+                    x + 21.,
+                    y + 14.,
+                    x + 12.,
+                    y + 17.,
+                    x + 8.,
+                    y + 8.,
+                    x + 14.,
+                    y + 3.,
+                ]);
+                GdipClosePathFigure(g.p);
+            } else {
+                GdipAddPathArc(g.p, x + 7., y + 7., 10., 10., 0., 360.);
+                for i in 0..8 {
+                    let angle = i as f32 * std::f32::consts::TAU / 8.;
+                    line(
+                        12. + 8. * angle.cos(),
+                        12. + 8. * angle.sin(),
+                        12. + 10.5 * angle.cos(),
+                        12. + 10.5 * angle.sin(),
+                    );
+                }
+            }
+        }
         122 => {
             line(12., 5., 12., 19.);
             line(5., 12., 19., 12.);
@@ -419,8 +580,11 @@ pub unsafe fn button(d: &DRAWITEMSTRUCT, body: HFONT, main: bool) {
     let primary = [604, 203, 314, 401, 504].contains(&d.CtlID);
     let disabled = d.itemState & ODS_DISABLED != 0;
     let pressed = d.itemState & ODS_SELECTED != 0;
-    let icons = [122, 120, 112, 113, 114, 115, 116, 602, 603, 105, 102].contains(&d.CtlID);
-    fill(d.hDC, d.rcItem, if main { BG } else { WHITE });
+    let icons = [
+        117, 126, 122, 120, 112, 113, 114, 115, 116, 602, 603, 105, 102,
+    ]
+    .contains(&d.CtlID);
+    fill(d.hDC, d.rcItem, if main { bg() } else { white() });
     let mut r = d.rcItem;
     InflateRect(&mut r, -1, -1);
     let surface = if disabled {
@@ -434,7 +598,7 @@ pub unsafe fn button(d: &DRAWITEMSTRUCT, body: HFONT, main: bool) {
     } else if pressed {
         0x00f7ede5
     } else {
-        WHITE
+        white()
     };
     rounded(
         d.hDC,
@@ -448,7 +612,7 @@ pub unsafe fn button(d: &DRAWITEMSTRUCT, body: HFONT, main: bool) {
             d.hDC,
             r,
             d.CtlID,
-            if disabled { 0x00bbada4 } else { INK },
+            if disabled { 0x00bbada4 } else { ink() },
             text(d.hwndItem) == "Pause",
         )
     } else {
@@ -458,11 +622,11 @@ pub unsafe fn button(d: &DRAWITEMSTRUCT, body: HFONT, main: bool) {
             r,
             body,
             if disabled {
-                MUTED
+                muted()
             } else if primary {
-                WHITE
+                0x00ffffff
             } else {
-                INK
+                ink()
             },
             DT_CENTER | DT_VCENTER | DT_SINGLELINE,
         );
@@ -478,9 +642,139 @@ pub unsafe fn modern(h: HWND) {
         fn DwmSetWindowAttribute(h: HWND, key: u32, data: *const c_void, size: u32) -> i32;
     }
     let corner = 2u32;
+    let dark = crate::theme::dark() as u32;
+    DwmSetWindowAttribute(h, 20, (&dark as *const u32).cast(), 4);
     DwmSetWindowAttribute(h, 33, (&corner as *const u32).cast(), 4);
-    DwmSetWindowAttribute(h, 35, (&WHITE as *const u32).cast(), 4);
-    DwmSetWindowAttribute(h, 36, (&INK as *const u32).cast(), 4);
+    DwmSetWindowAttribute(h, 35, (&white() as *const u32).cast(), 4);
+    DwmSetWindowAttribute(h, 36, (&ink() as *const u32).cast(), 4);
+}
+pub unsafe extern "system" fn header_proc(
+    h: HWND,
+    msg: u32,
+    wp: usize,
+    lp: isize,
+    _id: usize,
+    _data: usize,
+) -> isize {
+    if msg == WM_PAINT || msg == WM_PRINTCLIENT {
+        buffered(
+            h,
+            if msg == WM_PRINTCLIENT {
+                Some(wp as HDC)
+            } else {
+                None
+            },
+            white(),
+            |dc| {
+                let count = SendMessageW(h, HDM_GETITEMCOUNT, 0, 0);
+                let body = SendMessageW(h, WM_GETFONT, 0, 0) as HFONT;
+                for index in 0..count {
+                    let mut rect = RECT::default();
+                    SendMessageW(
+                        h,
+                        HDM_GETITEMRECT,
+                        index as usize,
+                        (&mut rect as *mut RECT) as isize,
+                    );
+                    let mut text = [0u16; 256];
+                    let mut item = HDITEMW::default();
+                    item.mask = HDI_TEXT;
+                    item.pszText = text.as_mut_ptr();
+                    item.cchTextMax = 256;
+                    SendMessageW(
+                        h,
+                        HDM_GETITEMW,
+                        index as usize,
+                        (&mut item as *mut HDITEMW) as isize,
+                    );
+                    rect.left += 8;
+                    label(
+                        dc,
+                        &from_wide(&text),
+                        rect,
+                        body,
+                        ink(),
+                        DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS,
+                    );
+                }
+            },
+        );
+        return 0;
+    }
+    DefSubclassProc(h, msg, wp, lp)
+}
+pub unsafe extern "system" fn checkbox_proc(
+    h: HWND,
+    msg: u32,
+    wp: usize,
+    lp: isize,
+    _id: usize,
+    _data: usize,
+) -> isize {
+    if msg == WM_ERASEBKGND {
+        return 1;
+    }
+    if msg == WM_PAINT || msg == WM_PRINTCLIENT {
+        buffered(
+            h,
+            if msg == WM_PRINTCLIENT {
+                Some(wp as HDC)
+            } else {
+                None
+            },
+            white(),
+            |dc| {
+                let mut rect = RECT::default();
+                GetClientRect(h, &mut rect);
+                let top = (rect.bottom - 16) / 2;
+                let checked = SendMessageW(h, BM_GETCHECK, 0, 0) == BST_CHECKED as isize;
+                rounded(
+                    dc,
+                    RECT {
+                        left: 1,
+                        top,
+                        right: 17,
+                        bottom: top + 16,
+                    },
+                    if checked { BLUE } else { white() },
+                    if checked { BLUE } else { border() },
+                    3.,
+                );
+                if checked {
+                    let g = Graphics::new(dc);
+                    g.line(4., (top + 8) as f32, 8., (top + 12) as f32);
+                    g.line(8., (top + 12) as f32, 14., (top + 4) as f32);
+                    g.draw(0x00ffffff, 1.6);
+                }
+                rect.left = 25;
+                label(
+                    dc,
+                    &text(h),
+                    rect,
+                    SendMessageW(h, WM_GETFONT, 0, 0) as HFONT,
+                    ink(),
+                    DT_LEFT | DT_VCENTER | DT_SINGLELINE,
+                );
+                if GetFocus() == h {
+                    DrawFocusRect(dc, &rect);
+                }
+            },
+        );
+        return 0;
+    }
+    let result = DefSubclassProc(h, msg, wp, lp);
+    if [
+        WM_LBUTTONUP,
+        WM_KEYUP,
+        WM_SETFOCUS,
+        WM_KILLFOCUS,
+        BM_SETCHECK,
+    ]
+    .contains(&msg)
+    {
+        InvalidateRect(h, null(), 0);
+    }
+    result
 }
 pub unsafe fn buffered<F: FnOnce(HDC)>(h: HWND, provided: Option<HDC>, color: u32, draw: F) {
     let mut ps = PAINTSTRUCT::default();
@@ -542,12 +836,12 @@ unsafe extern "system" fn edit_proc(
             right: r.right - r.left,
             bottom: r.bottom - r.top,
         };
-        fill(dc, r, WHITE);
+        fill(dc, r, white());
         rounded(
             dc,
             r,
-            WHITE,
-            if GetFocus() == h { BLUE } else { BORDER },
+            white(),
+            if GetFocus() == h { BLUE } else { border() },
             8.,
         );
         ReleaseDC(h, dc);

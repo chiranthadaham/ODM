@@ -22,6 +22,7 @@ pub enum Kind {
     BrowserPlugins,
     Network,
     Renew(Arc<Job>),
+    Checksum(Arc<Job>),
 }
 pub unsafe fn is_start(h: HWND) -> bool {
     let p = GetWindowLongPtrW(h, GWLP_USERDATA) as *mut Popup;
@@ -68,13 +69,14 @@ pub unsafe fn open(a: &mut App, kind: Kind) {
     }
     let (title, w, h) = match &kind {
         Kind::New => ("New download", 700, 285),
-        Kind::Start(_) => ("New download — Save and Start", 690, 270),
+        Kind::Start(_) => ("New download — Save and Start", 690, 350),
         Kind::Progress(_) => ("Download progress", 650, 275),
         Kind::Complete(_) => ("Download complete", 640, 205),
-        Kind::Settings => ("Settings", 510, 310),
+        Kind::Settings => ("Settings", 510, 390),
         Kind::BrowserPlugins => ("Browser plug-in", 560, 245),
         Kind::Network => ("Connection settings", 700, 570),
         Kind::Renew(_) => ("Renew download link", 700, 240),
+        Kind::Checksum(_) => ("Verify SHA-256", 700, 350),
     };
     let p = Box::new(Popup {
         app: a,
@@ -173,7 +175,12 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                         .unwrap_or_else(|| default_name(u));
                     edit(
                         h,
-                        &a.folder.join(name).to_string_lossy(),
+                        &crate::integrity::destination(
+                            &a.folder,
+                            &name,
+                            a.engine.organize.load(O::Relaxed),
+                        )
+                        .to_string_lossy(),
                         201,
                         20,
                         111,
@@ -196,8 +203,19 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                         24,
                         a.small,
                     );
-                    button(h, "Start download", 203, 390, 185, 150, f);
-                    button(h, "Cancel", 2, 550, 185, 110, f);
+                    label(
+                        h,
+                        "Expected SHA-256 (optional)",
+                        207,
+                        20,
+                        186,
+                        640,
+                        24,
+                        a.small,
+                    );
+                    edit(h, "", 208, 20, 212, 640, f, 0);
+                    button(h, "Start download", 203, 390, 265, 150, f);
+                    button(h, "Cancel", 2, 550, 265, 110, f);
                 }
                 Kind::Progress(j) => {
                     label(
@@ -277,9 +295,84 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                         );
                     }
                     label(h,"Changes apply to active downloads. Higher connection counts depend on the server's limits.",323,20,178,450,42,a.small);
-                    button(h, "Connections…", 315, 20, 231, 175, f);
-                    button(h, "Save", 314, 220, 231, 135, f);
-                    button(h, "Cancel", 2, 365, 231, 105, f);
+                    let organize = child(
+                        h,
+                        "BUTTON",
+                        "Use file-type subfolders for new downloads",
+                        316,
+                        BS_AUTOCHECKBOX as u32 | WS_TABSTOP,
+                        20,
+                        225,
+                        450,
+                        28,
+                        f,
+                    );
+                    SendMessageW(
+                        organize,
+                        BM_SETCHECK,
+                        if a.engine.organize.load(O::Relaxed) {
+                            BST_CHECKED
+                        } else {
+                            BST_UNCHECKED
+                        } as usize,
+                        0,
+                    );
+                    let hash = child(
+                        h,
+                        "BUTTON",
+                        "Calculate SHA-256 for every download",
+                        317,
+                        BS_AUTOCHECKBOX as u32 | WS_TABSTOP,
+                        20,
+                        260,
+                        450,
+                        28,
+                        f,
+                    );
+                    SendMessageW(
+                        hash,
+                        BM_SETCHECK,
+                        if a.engine.hash_downloads.load(O::Relaxed) {
+                            BST_CHECKED
+                        } else {
+                            BST_UNCHECKED
+                        } as usize,
+                        0,
+                    );
+                    SetWindowSubclass(organize, Some(paint::checkbox_proc), 501, 0);
+                    SetWindowSubclass(hash, Some(paint::checkbox_proc), 501, 0);
+                    button(h, "Connections…", 315, 20, 311, 175, f);
+                    button(h, "Save", 314, 220, 311, 135, f);
+                    button(h, "Cancel", 2, 365, 311, 105, f);
+                }
+                Kind::Checksum(job) => {
+                    let d = job.snapshot();
+                    label(
+                        h,
+                        "Expected SHA-256 (optional; paste the publisher's checksum)",
+                        380,
+                        20,
+                        20,
+                        650,
+                        26,
+                        a.small,
+                    );
+                    edit(h, &d.expected_sha256, 381, 20, 48, 650, f, 0);
+                    label(h, "Calculated SHA-256", 382, 20, 98, 650, 26, a.small);
+                    edit(
+                        h,
+                        &d.actual_sha256,
+                        383,
+                        20,
+                        126,
+                        650,
+                        f,
+                        ES_READONLY as u32,
+                    );
+                    label(h, &d.integrity_status, 384, 20, 174, 650, 60, a.small);
+                    button(h, "Calculate / Verify", 385, 340, 260, 200, f);
+                    button(h, "Close", 2, 550, 260, 120, f);
+                    SetTimer(h, 1, 250, None);
                 }
                 Kind::Network => {
                     let n = a.engine.network.lock().unwrap().clone();
@@ -417,10 +510,20 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                             if !path.is_absolute() || path.file_name().is_none() {
                                 message(h, "Choose a full save path.")
                             } else {
-                                let v = v.clone();
+                                let mut v = v.clone();
+                                let expected = match crate::integrity::normalize(&value(h, 208)) {
+                                    Ok(s) => s,
+                                    Err(error) => {
+                                        message(h, &error);
+                                        return 0;
+                                    }
+                                };
+                                v["sha256"] = Value::String(expected);
                                 let id = v["promptId"].as_u64().unwrap_or(0) as usize;
-                                if let Some(folder) = path.parent() {
-                                    a.folder = folder.into();
+                                if !a.engine.organize.load(O::Relaxed) {
+                                    if let Some(folder) = path.parent() {
+                                        a.folder = folder.into();
+                                    }
                                 }
                                 match a.add(v["url"].as_str().unwrap_or("").into(), path, &v) {
                                     Ok(()) => {
@@ -468,6 +571,14 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                     }
                 }
                 315 => open(a, Kind::Network),
+                385 => {
+                    if let Kind::Checksum(job) = &p.kind {
+                        match crate::integrity::normalize(&value(h, 381)) {
+                            Ok(expected) => a.verify_file(job.clone(), expected),
+                            Err(error) => message(h, &error),
+                        }
+                    }
+                }
                 314 => {
                     let values = (
                         value(h, 310).parse::<usize>(),
@@ -482,6 +593,16 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                             a.engine.max_active.store(active, O::Relaxed);
                             a.engine.connections.store(connections, O::Relaxed);
                             a.engine.limit_kib.store(limit, O::Relaxed);
+                            a.engine.organize.store(
+                                SendMessageW(GetDlgItem(h, 316), BM_GETCHECK, 0, 0)
+                                    == BST_CHECKED as isize,
+                                O::Relaxed,
+                            );
+                            a.engine.hash_downloads.store(
+                                SendMessageW(GetDlgItem(h, 317), BM_GETCHECK, 0, 0)
+                                    == BST_CHECKED as isize,
+                                O::Relaxed,
+                            );
                             a.save();
                             PostMessageW(h, WM_CLOSE, 0, 0);
                         } else {
@@ -532,6 +653,11 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
             0
         }
         WM_TIMER => {
+            if let Kind::Checksum(job) = &p.kind {
+                let d = job.snapshot();
+                set_text(GetDlgItem(h, 383), &d.actual_sha256);
+                set_text(GetDlgItem(h, 384), &d.integrity_status);
+            }
             if let Kind::Progress(j) = &p.kind {
                 if j.state() == COMPLETE {
                     PostMessageW(h, WM_CLOSE, 0, 0);
@@ -622,7 +748,7 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                 } else {
                     None
                 },
-                paint::WHITE,
+                paint::white(),
                 |dc| {
                     if let Kind::Progress(j) = &p.kind {
                         let r = RECT {
@@ -662,10 +788,10 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
             paint::button(&*(lp as *const DRAWITEMSTRUCT), a.font, false);
             1
         }
-        WM_CTLCOLORSTATIC | WM_CTLCOLOREDIT => {
-            SetTextColor(wp as HDC, paint::INK);
-            SetBkColor(wp as HDC, paint::WHITE);
-            GetStockObject(WHITE_BRUSH) as isize
+        WM_CTLCOLORSTATIC | WM_CTLCOLOREDIT | WM_CTLCOLORBTN => {
+            SetTextColor(wp as HDC, paint::ink());
+            SetBkColor(wp as HDC, paint::white());
+            crate::theme::surface_brush() as isize
         }
         WM_CLOSE => {
             if let Kind::Start(v) = &p.kind {

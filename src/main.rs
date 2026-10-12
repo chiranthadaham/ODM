@@ -1,13 +1,16 @@
 #![windows_subsystem = "windows"]
 mod bridge;
 mod http;
+mod integrity;
 mod model;
 mod paint;
 mod process;
 mod runtime;
 mod store;
+mod theme;
 mod transfer;
 mod ui;
+mod update;
 mod video;
 mod win;
 use model::*;
@@ -52,6 +55,7 @@ fn main() {
             }
             match pair[0].as_str() {
                 "--etag" => j.details.lock().unwrap().etag = pair[1].clone(),
+                "--sha256" => j.details.lock().unwrap().expected_sha256 = pair[1].clone(),
                 "--pause-after" => j
                     .pause_after
                     .store(pair[1].parse().unwrap_or(0), Ordering::Relaxed),

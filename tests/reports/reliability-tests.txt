@@ -1,0 +1,1 @@
+PASS: matching/mismatching downloads, changed-server restart, stale unvalidated segment rejection, truncated queue recovery, saved range resume, post-download verification, organized save prompt, settings persistence and valid backup.

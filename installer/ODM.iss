@@ -25,7 +25,6 @@ LicenseFile=..\LICENSE
 UninstallDisplayIcon={app}\OpenDownloadManager.exe
 CloseApplications=yes
 RestartApplications=no
-AppMutex=Local\OpenDownloadManagerRust
 SetupLogging=yes
 [Files]
 Source: "..\..\Bin\OpenDownloadManager.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -37,16 +36,42 @@ Source: "..\..\Bin\Firefox\extension\*"; DestDir: "{app}\Firefox\extension"; Fla
 Source: "..\..\Bin\Chromium\extension\*"; DestDir: "{app}\Chromium\extension"; Flags: ignoreversion recursesubdirs
 [Icons]
 Name: "{autoprograms}\Open Download Manager"; Filename: "{app}\OpenDownloadManager.exe"
+Name: "{userdesktop}\Open Download Manager"; Filename: "{app}\OpenDownloadManager.exe"; WorkingDir: "{app}"
 [Registry]
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "OpenDownloadManager"; ValueData: """{app}\OpenDownloadManager.exe"" --background"
 Root: HKCU; Subkey: "Software\Mozilla\NativeMessagingHosts\com.opendownloadmanager"; ValueType: string; ValueData: "{app}\Firefox\native-host.json"
 Root: HKCU; Subkey: "Software\Google\Chrome\NativeMessagingHosts\com.opendownloadmanager"; ValueType: string; ValueData: "{app}\Chromium\native-host.json"
 [Run]
-Filename: "{app}\OpenDownloadManager.exe"; Parameters: "--background --browser-plugins"; Flags: nowait runasoriginaluser; Description: "Start ODM and choose your browser plug-in"
+Filename: "{app}\OpenDownloadManager.exe"; Parameters: "--background"; Flags: nowait runasoriginaluser; Description: "Start ODM in the system tray"
 [UninstallDelete]
 Type: files; Name: "{app}\Firefox\native-host.json"
 Type: files; Name: "{app}\Chromium\native-host.json"
 [Code]
+function InitializeSetup(): Boolean;
+begin
+  Result := not CheckForMutexes('Local\OpenDownloadManagerRust');
+  if not Result then MsgBox('ODM is running in the system tray. Choose Exit from its tray menu before installing an update.', mbInformation, MB_OK);
+end;
+
+procedure InitializeUninstallProgressForm();
+var Window: HWND;
+    Attempts: Integer;
+begin
+  if not CheckForMutexes('Local\OpenDownloadManagerRust') then Exit;
+  if MsgBox('ODM is running in the system tray. Close it and continue uninstalling? Active downloads will be paused and downloaded files will be kept.', mbConfirmation, MB_YESNO) <> idYes then Abort;
+  Window := FindWindowByClassName('OpenDownloadManagerRust');
+  if Window <> 0 then PostMessage(Window, $0111, 119, 0);
+  Attempts := 0;
+  while CheckForMutexes('Local\OpenDownloadManagerRust') and (Attempts < 300) do begin
+    Sleep(100);
+    Attempts := Attempts + 1;
+  end;
+  if CheckForMutexes('Local\OpenDownloadManagerRust') then begin
+    MsgBox('ODM is still finishing its downloads. Choose Exit from its tray menu, wait for it to close, then run uninstall again.', mbError, MB_OK);
+    Abort;
+  end;
+end;
+
 function JsonEscape(Value: String): String;
 begin
   StringChangeEx(Value, '\', '\\', True);
@@ -83,3 +108,4 @@ begin
     RemoveOwnRegistration('Software\Google\Chrome\NativeMessagingHosts\com.opendownloadmanager', '', ExpandConstant('{app}\Chromium\native-host.json'));
   end;
 end;
+

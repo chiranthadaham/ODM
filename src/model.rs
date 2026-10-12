@@ -25,6 +25,7 @@ pub const NAMES: [&str; 7] = [
     "Scheduled",
 ];
 #[derive(Clone, Default, Serialize, Deserialize)]
+#[serde(default)]
 pub struct Details {
     pub url: String,
     pub path: PathBuf,
@@ -33,6 +34,9 @@ pub struct Details {
     pub modified: String,
     pub user_agent: String,
     pub referer: String,
+    pub expected_sha256: String,
+    pub actual_sha256: String,
+    pub integrity_status: String,
 }
 pub struct Job {
     pub id: u64,
@@ -104,6 +108,8 @@ pub struct Engine {
     pub connections: AtomicUsize,
     pub limit_kib: AtomicU64,
     pub max_active: AtomicUsize,
+    pub organize: AtomicBool,
+    pub hash_downloads: AtomicBool,
     pub network: Mutex<Network>,
     pub http_pool: Mutex<Vec<(String, Arc<crate::http::Connection>)>>,
     pub reservations: Mutex<HashSet<PathBuf>>,
@@ -123,6 +129,8 @@ impl Engine {
             connections: AtomicUsize::new(8),
             limit_kib: AtomicU64::new(0),
             max_active: AtomicUsize::new(2),
+            organize: AtomicBool::new(false),
+            hash_downloads: AtomicBool::new(false),
             network: Mutex::new(Network::default()),
             http_pool: Mutex::new(Vec::new()),
             reservations: Mutex::new(HashSet::new()),

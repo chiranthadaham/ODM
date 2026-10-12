@@ -4,6 +4,36 @@ use std::{
     time::{Duration, Instant},
 };
 #[test]
+fn checksum_validation_and_category_paths() {
+    assert_eq!(
+        crate::integrity::normalize(&"A".repeat(64)).unwrap(),
+        "a".repeat(64)
+    );
+    assert!(crate::integrity::normalize("abcd").is_err());
+    assert!(crate::integrity::normalize(&"g".repeat(64)).is_err());
+    let base = std::path::Path::new("C:\\Downloads");
+    assert_eq!(
+        crate::integrity::destination(base, "movie.MP4", true),
+        base.join("Videos/movie.MP4")
+    );
+    assert_eq!(
+        crate::integrity::destination(base, "paper.pdf", true),
+        base.join("Documents/paper.pdf")
+    );
+    assert_eq!(
+        crate::integrity::destination(base, "future.xyz", true),
+        base.join("Other/future.xyz")
+    );
+    assert_eq!(
+        crate::integrity::destination(base, "paper.pdf", false),
+        base.join("paper.pdf")
+    );
+    assert_eq!(
+        crate::integrity::destination(&base.join("Videos"), "movie.mp4", true),
+        base.join("Videos/movie.mp4")
+    );
+}
+#[test]
 fn filename_reservations_follow_windows_case_rules() {
     let engine = Engine::new();
     let first = engine
