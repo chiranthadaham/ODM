@@ -1,6 +1,19 @@
 "use strict";
 const HOST = "com.opendownloadmanager";
 const FILE_TYPES = new RegExp("\\.(?:"+DOWNLOAD_FORMATS.join("|")+")(?:$|[?#])", "i");
+let consentAccepted = false;
+let consentChanged = false;
+let capturePreference = false;
+let captureChanged = false;
+const captureReady = browser.storage.local.get({capture:true,consentVersion:0}).then(value => {
+  if (!consentChanged) consentAccepted = value.consentVersion === 1;
+  if (!captureChanged) capturePreference = value.capture !== false;
+}).catch(() => {});
+if (browser.storage.onChanged) browser.storage.onChanged.addListener((changes,area) => {
+  if (area === "local" && changes.consentVersion) { consentChanged = true; consentAccepted = changes.consentVersion.newValue === 1; if (!consentAccepted) for (const cache of [requestContexts,detectedVideos,videoCandidates,fetchedFiles]) cache.clear(); }
+  if (area === "local" && changes.capture) { captureChanged = true; capturePreference = changes.capture.newValue !== false; }
+});
+async function captureEnabled() { await captureReady; return consentAccepted && capturePreference; }
 const pending = new Set();
 const detectedVideos=new Map();
 const videoCandidates=new Map();
@@ -19,15 +32,17 @@ function fileSample(url){try{const u=new URL(url);return ["filesamples.com","www
 function supported(url) { try { return ["http:", "https:"].includes(new URL(url).protocol); } catch { return false; } }
 const requestContexts=new Map();
 if(browser.webRequest.onBeforeSendHeaders)browser.webRequest.onBeforeSendHeaders.addListener(details=>{
- if(details.incognito)return;const get=name=>(details.requestHeaders||[]).find(h=>h.name.toLowerCase()===name)?.value||"";let referer=get("referer")||details.documentUrl||details.originUrl||details.initiator||"";
+ if(details.incognito||!consentAccepted)return;const get=name=>(details.requestHeaders||[]).find(h=>h.name.toLowerCase()===name)?.value||"";let referer=get("referer")||details.documentUrl||details.originUrl||details.initiator||"";
  try{const source=new URL(referer);referer=["http:","https:"].includes(source.protocol)?source.origin+"/":"";}catch{referer="";}
- if(requestContexts.size>=500)requestContexts.clear();requestContexts.set(details.url,{userAgent:get("user-agent"),referer,time:Date.now()});
+ if(requestContexts.size>=500)requestContexts.clear();requestContexts.set(details.url,{referer,time:Date.now()});
 },{urls:["http://*/*","https://*/*"]},["requestHeaders"]);
 
 async function sendDownload(url,filename="",sourcePage="") {
+  await captureReady;
+  if (!consentAccepted) throw new Error("Review privacy and permissions before enabling downloads.");
   if (!supported(url)) throw new Error("Choose an HTTP or HTTPS link.");
   const context=requestContexts.get(url);const details=context&&Date.now()-context.time<120000?{...context}:{};if(!details.referer&&supported(sourcePage)){details.referer=new URL(sourcePage).origin+"/";}
-  const reply = await browser.runtime.sendNativeMessage(HOST, {action:"download", url, filename, verifyAccess:true,userAgent:details.userAgent||globalThis.navigator?.userAgent||"",referer:details.referer||""});
+  const reply = await browser.runtime.sendNativeMessage(HOST, {action:"download", url, filename, verifyAccess:true,userAgent:"",referer:details.referer||""});
   if (!reply || !reply.ok || !reply.queued) {const error=new Error(reply?.error || "The app did not accept this download.");error.canceled=!!reply?.canceled;throw error;}
   lastStatus = "Sent to Open Download Manager.";
   await browser.browserAction.setBadgeText({text:""});
@@ -40,19 +55,18 @@ async function report(error) {
 }
 async function capture(item) {
   if (pending.has(item.id) || item.incognito || item.state !== "in_progress" || !supported(item.url)) return;
-  const settings = await browser.storage.local.get({capture:true});
-  if (!settings.capture) return;
+  if (!(await captureEnabled())) return;
   pending.add(item.id);let paused=false;
   try {
     // Keep the browser's transfer intact unless the app explicitly accepts it.
     let current;
     // onCreated can precede response headers. Pausing then may discard the transfer.
-    for (let attempt=0;attempt<40;attempt++) {
+    for (let attempt=0;attempt<48;attempt++) {
       if ((browserManaged.get(item.url)||0)>Date.now()) return;
       current=(await browser.downloads.search({id:item.id}))[0];
       if (!current || current.state !== "in_progress") return;
       if (current.bytesReceived > 0 && current.totalBytes > 0) break;
-      await new Promise(resolve=>setTimeout(resolve,50));
+      await new Promise(resolve=>setTimeout(resolve,attempt < 10 ? 10 : 50));
     }
     if (!current || !(current.bytesReceived > 0 && current.totalBytes > 0)) {lastStatus="Firefox kept a download that cannot be paused safely. Send its link manually if needed.";return;}
     await browser.downloads.pause(item.id);paused=true;
@@ -83,7 +97,7 @@ async function recoverFailedDownload(id) {
     if(pending.has(id))return;
     const item=(await browser.downloads.search({id}))[0];
     if(!item||item.incognito||item.state!=="interrupted"||!recoverableFailures.has(item.error)||!supported(item.url)||(browserManaged.get(item.url)||0)>Date.now())return;
-    if(!(await browser.storage.local.get({capture:true})).capture)return;
+    if(!(await captureEnabled()))return;
     // Suppress duplicate failure events for this attempt; a later manual retry is allowed.
     browserManaged.set(item.url,Date.now()+60000);
     await sendDownload(item.finalUrl||item.url,(item.filename||"").split(/[\\/]/).pop(),item.referrer||"");
@@ -101,9 +115,12 @@ browser.contextMenus.onClicked.addListener(async(info,tab)=>{
   catch(error){await report(error);}
 });
 browser.runtime.onMessage.addListener(async(message,sender)=>{
+  await captureReady;
+  if(sender?.tab?.incognito)return {ok:false,error:"Private-window downloads stay in the browser."};
+  if(!consentAccepted && !["status","capture"].includes(message.action))return {ok:false,error:"Review privacy and permissions before enabling downloads."};
   if(message.action==="detected-videos"){const prefix=String(sender?.tab?.id)+":";const unique=new Map();for(const [key,entries] of videoCandidates)if(key.startsWith(prefix))for(const video of entries)if(!unique.has(video.url)||unique.get(video.url).time<video.time)unique.set(video.url,video);return {videos:[...unique.values()].sort((a,b)=>b.time-a.time)};}
   if(message.action==="resolve-blob-download"){
-    if(!(await browser.storage.local.get({capture:true})).capture)return {ok:false};
+    if(!(await captureEnabled()))return {ok:false};
     const name=String(message.filename||"").toLowerCase();
     // Exact filenames and the requesting frame prevent unrelated fetches from being substituted.
     const matches=(fetchedFiles.get(frameKey(sender))||[]).filter(f=>Date.now()-f.time<120000&&f.filename.toLowerCase()===name);
@@ -111,10 +128,10 @@ browser.runtime.onMessage.addListener(async(message,sender)=>{
     return urls.length===1?{ok:true,url:urls[0],filename:matches.at(-1).filename}:{ok:false};
   }
   if(message.action==="video-download"){const key=String(sender?.tab?.id)+":"+String(sender?.frameId||0);const found=detectedVideos.get(key);const url=supported(message.url)?message.url:(found&&Date.now()-found.time<600000?found.url:"");if(!url)return {ok:false,error:"This player exposes no downloadable HTTP video. Protected or browser-only streams may be unavailable."};try{return await sendDownload(url);}catch(error){return {ok:false,canceled:!!error.canceled,error:error.message};}}
-  if(message.action==="status")return {lastStatus,...await browser.storage.local.get({capture:true})};
-  if(message.action==="capture"){await browser.storage.local.set({capture:!!message.enabled});return {ok:true};}
+  if(message.action==="status")return {lastStatus,capture:consentAccepted&&capturePreference,consent:consentAccepted};
+  if(message.action==="capture"){if(!consentAccepted)return {ok:false,error:"Accept permissions first."};await browser.storage.local.set({capture:!!message.enabled});captureChanged=true;capturePreference=!!message.enabled;return {ok:true};}
   if(message.action==="ping"){try{return await browser.runtime.sendNativeMessage(HOST,{action:"ping"});}catch(error){return {ok:false,error:error.message};}}
-  if(message.action==="download"){try{return await sendDownload(message.url,message.filename||"");}catch(error){await report(error);return {ok:false,canceled:!!error.canceled,error:lastStatus};}}
+  if(message.action==="download"){try{return await sendDownload(message.url,message.filename||"",sender?.tab?.url||"");}catch(error){await report(error);return {ok:false,canceled:!!error.canceled,error:lastStatus};}}
   return {ok:false,error:"Unknown action"};
 });
 
@@ -134,7 +151,7 @@ async function captureHeaders(details) {
   if (get("cf-mitigated").toLowerCase()==="challenge") return {};
   // File responses need no extension allowlist. Listener types exclude page assets and XHR.
   if (!attachment && !fileSample(details.url) && !mirrorFile && !FILE_TYPES.test(details.url) && (!type || type.includes("text/html"))) return {};
-  if (!(await browser.storage.local.get({capture:true})).capture) return {};
+  if (!(await captureEnabled())) return {};
   for (const [url,until] of browserManaged) if(until<Date.now())browserManaged.delete(url);
   browserManaged.set(details.url,Date.now()+60000);
   try {
@@ -154,7 +171,7 @@ browser.webRequest.onHeadersReceived.addListener(captureHeaders,
 
 // Watch only response metadata to offer an explicit video button for blob-backed players.
 browser.webRequest.onHeadersReceived.addListener(details=>{
- if(details.incognito||![200,206].includes(details.statusCode)||!supported(details.url)||details.tabId<0)return;
+ if(!consentAccepted||details.incognito||![200,206].includes(details.statusCode)||!supported(details.url)||details.tabId<0)return;
  const type=(details.responseHeaders||[]).find(h=>h.name.toLowerCase()==="content-type")?.value||"";
  if(details.type==="main_frame"&&/text\/html/i.test(type))for(const cache of [detectedVideos,fetchedFiles,videoCandidates])for(const key of cache.keys())if(key.startsWith(String(details.tabId)+":"))cache.delete(key);
  if(details.type==="xmlhttprequest"&&details.method==="GET"&&supported(details.url)){
@@ -175,4 +192,4 @@ browser.webRequest.onHeadersReceived.addListener(details=>{
   if(manifest||!old?.manifest||Date.now()-old.time>600000)detectedVideos.set(key,{url:details.url,time:Date.now(),manifest});
  }
 },{urls:["http://*/*","https://*/*"],types:["media","xmlhttprequest","main_frame"]},["responseHeaders"]);
-if(browser.runtime.onInstalled)browser.runtime.onInstalled.addListener(()=>browser.storage.local.set({capture:true}));
+if(browser.runtime.onInstalled)browser.runtime.onInstalled.addListener(async()=>{await captureReady;if(!consentAccepted)browser.tabs.create({url:browser.runtime.getURL("consent.html"),active:true});});

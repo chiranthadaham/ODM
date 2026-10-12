@@ -63,9 +63,6 @@ unsafe fn draw_cell(a: &App, d: &mut NMLVCUSTOMDRAW) -> isize {
         stage if stage == CDDS_ITEMPREPAINT | CDDS_SUBITEM => {
             let row = d.nmcd.dwItemSpec;
             let col = d.iSubItem as usize;
-            if col != 1 && col != 2 {
-                return CDRF_DODEFAULT as isize;
-            }
             let Some(j) = a.jobs.get(row) else {
                 return CDRF_DODEFAULT as isize;
             };
@@ -86,12 +83,30 @@ unsafe fn draw_cell(a: &App, d: &mut NMLVCUSTOMDRAW) -> isize {
             let selected = SendMessageW(a.list, LVM_GETITEMSTATE, row, LVIS_SELECTED as isize)
                 & LVIS_SELECTED as isize
                 != 0;
+            if col == 0 {
+                r.right = r.left + SendMessageW(a.list, LVM_GETCOLUMNWIDTH, 0, 0) as i32;
+            }
             paint::fill(
                 d.nmcd.hdc,
                 r,
                 if selected { 0x00ffe7d1 } else { paint::WHITE },
             );
-            InflateRect(&mut r, -8, -7);
+            if col != 1 && col != 2 {
+                r.left += 12;
+                r.right -= 12;
+                if let Some(value) = a.rows.get(row).and_then(|cells| cells.get(col)) {
+                    paint::label(
+                        d.nmcd.hdc,
+                        &from_wide(value),
+                        r,
+                        a.font,
+                        paint::INK,
+                        DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS | DT_NOPREFIX,
+                    );
+                }
+                return CDRF_SKIPDEFAULT as isize;
+            }
+            InflateRect(&mut r, -10, -9);
             if col == 1 {
                 let (surface, ink) = match j.state() {
                     COMPLETE => (0x00e4f5e5, 0x005b7f28),
@@ -418,6 +433,7 @@ impl App {
         SendMessageW(self.list, LVM_ENSUREVISIBLE, self.jobs.len() - 1, 0);
         crate::workflow::open(self, crate::workflow::Kind::Progress(j));
         self.save();
+        PostMessageW(self.h, WM_APP + 74, 0, 0);
         Ok(())
     }
     unsafe fn refresh(&mut self) {
@@ -585,7 +601,7 @@ impl App {
             left: 20,
             top: 56,
             right: 1600,
-            bottom: 86,
+            bottom: 92,
         };
         InvalidateRect(self.h, &r, 0);
     }
@@ -741,6 +757,7 @@ impl App {
                 .jobs
                 .retain(|j| j.active.load(O::Relaxed) || j.state() == QUEUED),
             117 => open(self, Kind::Settings),
+            124 => open(self, Kind::BrowserPlugins),
             118 => {
                 MessageBoxW(self.h,wide("Open Download Manager 0.2.0\nNative Rust edition\n\nMIT licensed. Third-party notices are included in the licenses folder.").as_ptr(),wide("About Open Download Manager").as_ptr(),MB_OK);
             }
@@ -810,19 +827,6 @@ impl App {
                     });
                 }
             }
-            123 => {
-                let m = CreatePopupMenu();
-                AppendMenuW(m, MF_STRING, 180, wide("Sort by status").as_ptr());
-                AppendMenuW(m, MF_STRING, 181, wide("Sort by file type").as_ptr());
-                let mut p = POINT::default();
-                GetCursorPos(&mut p);
-                let id = TrackPopupMenu(m, TPM_RETURNCMD, p.x, p.y, 0, self.h, null());
-                DestroyMenu(m);
-                if id != 0 {
-                    self.sort = if id == 180 { 1 } else { 6 };
-                    self.descending = false;
-                }
-            }
             119 => {
                 self.exiting = true;
                 for j in &self.jobs {
@@ -880,7 +884,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
             .iter()
             .enumerate()
             {
-                let c = button(h, name, *id, 24 + i as i32 * 56, 20, 44, a.font);
+                let c = button(h, name, *id, 24 + i as i32 * 54, 20, 44, a.font);
                 a.tip(
                     c,
                     if *id == 120 {
@@ -890,9 +894,9 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                     },
                 );
             }
-            button(h, "Organize", 123, 424, 20, 122, a.font);
             button(h, "Clear all", 121, 1000, 20, 110, a.font);
             button(h, "Settings", 117, 40, 700, 120, a.font);
+            button(h, "Browser plug-in", 124, 152, 700, 160, a.font);
             button(h, "About", 118, 1000, 700, 96, a.font);
             label(h, "", 144, 28, 760, 1100, 28, a.small);
             a.list = child(
@@ -913,7 +917,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                 0,
                 (LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER) as isize,
             );
-            let images = ImageList_Create(1, 38, ILC_COLOR32, 1, 1);
+            let images = ImageList_Create(1, 44, ILC_COLOR32, 1, 1);
             SendMessageW(
                 a.list,
                 LVM_SETIMAGELIST,
@@ -936,7 +940,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                 let mut s = wide(s);
                 let c = LVCOLUMNW {
                     mask: LVCF_TEXT | LVCF_WIDTH,
-                    cx: [260, 118, 125, 180, 110, 100, 120, 205][i],
+                    cx: [260, 110, 120, 180, 90, 110, 90, 185][i],
                     pszText: s.as_mut_ptr(),
                     ..Default::default()
                 };
@@ -970,23 +974,40 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
             MoveWindow(
                 a.list,
                 24,
-                90,
+                106,
                 (w - 48).max(200),
-                (height - 224).max(100),
+                (height - 210).max(100),
                 1,
             );
             SetWindowRgn(
                 a.list,
-                CreateRoundRectRgn(0, 0, (w - 48).max(200), (height - 224).max(100), 20, 20),
+                CreateRoundRectRgn(0, 0, (w - 48).max(200), (height - 210).max(100), 16, 16),
                 1,
             );
+            let widths = [(w - 48 - 885).max(180), 110, 120, 180, 90, 110, 90, 185];
+            for (column, width) in widths.iter().enumerate() {
+                SendMessageW(a.list, LVM_SETCOLUMNWIDTH, column, *width as isize);
+            }
             MoveWindow(GetDlgItem(h, 121), w - 134, 20, 110, 36, 1);
-            MoveWindow(GetDlgItem(h, 117), 40, height - 109, 120, 34, 1);
-            MoveWindow(GetDlgItem(h, 118), w - 136, height - 109, 96, 34, 1);
-            MoveWindow(GetDlgItem(h, 144), 28, height - 42, w - 56, 24, 1);
+            MoveWindow(GetDlgItem(h, 117), 24, height - 76, 112, 36, 1);
+            MoveWindow(GetDlgItem(h, 124), 148, height - 76, 160, 36, 1);
+            MoveWindow(GetDlgItem(h, 118), w - 120, height - 76, 96, 36, 1);
+            MoveWindow(
+                GetDlgItem(h, 144),
+                324,
+                height - 70,
+                (w - 460).max(100),
+                26,
+                1,
+            );
+            InvalidateRect(h, null(), 0);
             0
         }
         WM_TIMER => {
+            a.tick();
+            0
+        }
+        m if m == WM_APP + 74 => {
             a.tick();
             0
         }
@@ -1024,21 +1045,9 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                         dc,
                         RECT {
                             left: 16,
-                            top: 82,
+                            top: 96,
                             right: r.right - 16,
-                            bottom: r.bottom - 126,
-                        },
-                        paint::WHITE,
-                        paint::BORDER,
-                        12.,
-                    );
-                    paint::rounded(
-                        dc,
-                        RECT {
-                            left: 16,
-                            top: r.bottom - 124,
-                            right: r.right - 16,
-                            bottom: r.bottom - 60,
+                            bottom: r.bottom - 94,
                         },
                         paint::WHITE,
                         paint::BORDER,
@@ -1049,9 +1058,9 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                         "Download queue",
                         RECT {
                             left: 28,
-                            top: 58,
+                            top: 64,
                             right: 300,
-                            bottom: 86,
+                            bottom: 92,
                         },
                         a.bold,
                         paint::INK,
@@ -1071,9 +1080,9 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
                         &summary,
                         RECT {
                             left: 320,
-                            top: 58,
+                            top: 64,
                             right: r.right - 28,
-                            bottom: 86,
+                            bottom: 92,
                         },
                         a.small,
                         paint::MUTED,
@@ -1169,6 +1178,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
             a.decisions
                 .insert(v["promptId"].as_u64().unwrap_or(0) as usize, 0);
             a.choices.push_back(v);
+            PostMessageW(h, WM_APP + 74, 0, 0);
             1
         }
         m if m == WM_APP + 71 => *a.decisions.get(&wp).unwrap_or(&0),
@@ -1221,6 +1231,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
     }
 }
 pub fn run(engine: Arc<Engine>, background: bool) {
+    let browser_plugins = std::env::args().any(|arg| arg == "--browser-plugins");
     unsafe {
         let mutex = Handle(CreateMutexW(
             null(),
@@ -1229,6 +1240,9 @@ pub fn run(engine: Arc<Engine>, background: bool) {
         ));
         if GetLastError() == ERROR_ALREADY_EXISTS {
             let h = FindWindowW(wide(bridge::CLASS).as_ptr(), null());
+            if browser_plugins && !h.is_null() {
+                PostMessageW(h, WM_COMMAND, 124, 0);
+            }
             if !background && !h.is_null() {
                 ShowWindow(h, SW_RESTORE);
                 SetForegroundWindow(h);
@@ -1336,6 +1350,9 @@ pub fn run(engine: Arc<Engine>, background: bool) {
         if !background {
             ShowWindow(h, SW_SHOW);
             UpdateWindow(h);
+        }
+        if browser_plugins {
+            PostMessageW(h, WM_COMMAND, 124, 0);
         }
         let mut msg = MSG::default();
         while GetMessageW(&mut msg, null_mut(), 0, 0) > 0 {

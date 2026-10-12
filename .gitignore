@@ -5,3 +5,5 @@
 *.tmp
 __pycache__/
 native-host.json
+
+node_modules/

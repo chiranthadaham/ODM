@@ -39,7 +39,12 @@ fn handoff(engine: Arc<Engine>, mut request: Value) -> Result<Value, String> {
         if app.is_null() {
             std::process::Command::new(std::env::current_exe().map_err(|e| e.to_string())?)
                 .arg("--background")
-                .creation_flags(CREATE_NO_WINDOW)
+                // Firefox closes its native-host job after replying. The GUI
+                // must outlive that short-lived host and must not inherit its pipes.
+                .creation_flags(CREATE_NO_WINDOW | CREATE_BREAKAWAY_FROM_JOB)
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
                 .spawn()
                 .map_err(|e| e.to_string())?;
             for _ in 0..400 {
@@ -75,7 +80,7 @@ fn handoff(engine: Arc<Engine>, mut request: Value) -> Result<Value, String> {
             || accepted == 0
         {
             return Err(
-                "The app could not accept this link; keep downloading in the browser".into(),
+                "The app could not accept this link. If ODM is running as administrator, exit it and retry from the browser. Keep downloading in the browser if it still fails.".into(),
             );
         }
         let mut notified = !checking;

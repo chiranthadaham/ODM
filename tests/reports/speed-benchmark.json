@@ -1,0 +1,57 @@
+{
+  "method": "32 MiB HTTP/1.1 fixture, 25ms per connection setup and 15ms per request, three repeats each, full SHA256 integrity. Simulated latency; not an internet speed guarantee.",
+  "results": [
+    {
+      "build": "before",
+      "repeat": 1,
+      "seconds": 2.243,
+      "bytes": 33554432,
+      "requests": 129,
+      "connections": 9
+    },
+    {
+      "build": "before",
+      "repeat": 2,
+      "seconds": 1.17,
+      "bytes": 33554432,
+      "requests": 129,
+      "connections": 9
+    },
+    {
+      "build": "before",
+      "repeat": 3,
+      "seconds": 1.243,
+      "bytes": 33554432,
+      "requests": 129,
+      "connections": 9
+    },
+    {
+      "build": "after",
+      "repeat": 1,
+      "seconds": 0.516,
+      "bytes": 33554432,
+      "requests": 17,
+      "connections": 9
+    },
+    {
+      "build": "after",
+      "repeat": 2,
+      "seconds": 0.589,
+      "bytes": 33554432,
+      "requests": 17,
+      "connections": 9
+    },
+    {
+      "build": "after",
+      "repeat": 3,
+      "seconds": 1.164,
+      "bytes": 33554432,
+      "requests": 17,
+      "connections": 9
+    }
+  ],
+  "medianBeforeSeconds": 1.243,
+  "medianAfterSeconds": 0.589,
+  "medianSpeedup": 2.11,
+  "scope": "Performance was measured on the optimized engine before the final UI wake change. The benchmark is a controlled latency fixture, not a guarantee for public websites."
+}

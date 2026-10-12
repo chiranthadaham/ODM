@@ -3,7 +3,7 @@ let videoButton=null,videoPanel=null,videoToggle=null,videoDock=null,dismissed=f
 const pageVideos=new Map();
 function youtubePage(){return /(^|\.)youtube\.com$|^youtu\.be$/i.test(location.hostname);}
 function videoSource(video){
- if(youtubePage())return location.href;
+ if(youtubePage())return "";
  return [video?.currentSrc,video?.src,...Array.from(video?.querySelectorAll("source")||[],s=>s.src)].find(v=>/^https?:\/\//i.test(v||""))||"";
 }
 function rememberVideo(video,promote=false){

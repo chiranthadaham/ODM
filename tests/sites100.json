@@ -1,0 +1,662 @@
+[
+  {
+    "site": "Sweet Home 3D",
+    "page": "https://www.sweethome3d.com/download.jsp",
+    "url": "https://downloads.sourceforge.net/project/sweethome3d/SweetHome3D/SweetHome3D-7.5/SweetHome3D-7.5-windows.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Ardour",
+    "page": "https://ardour.org/download.html",
+    "url": "https://github.com/Ardour/ardour/archive/refs/tags/8.6.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Wikimedia Commons",
+    "page": "https://commons.wikimedia.org/wiki/File:Example.jpg",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Example.jpg",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "WireGuard",
+    "page": "https://www.wireguard.com/install/",
+    "url": "https://download.wireguard.com/windows-client/wireguard-installer.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Project Gutenberg",
+    "page": "https://www.gutenberg.org/ebooks/11",
+    "url": "https://www.gutenberg.org/ebooks/11.epub3.images",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Cmder",
+    "page": "https://cmder.app/",
+    "url": "https://github.com/cmderdev/cmder/archive/refs/tags/v1.3.25.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "AMD",
+    "page": "https://www.amd.com/en/support/download/drivers.html",
+    "url": "https://drivers.amd.com/relnotes/command-line-installation.pdf",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "KDE",
+    "page": "https://kde.org/download/",
+    "url": "https://download.kde.org/stable/frameworks/6.6/extra-cmake-modules-6.6.0.tar.xz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Ninite",
+    "page": "https://ninite.com/",
+    "url": "https://ninite.com/7zip/ninite.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Mozilla",
+    "page": "https://www.mozilla.org/firefox/new/",
+    "url": "https://download.mozilla.org/?product=firefox-stub&os=win&lang=en-US",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "WinDirStat",
+    "page": "https://windirstat.net/download.html",
+    "url": "https://github.com/windirstat/windirstat/archive/refs/tags/release/v2.2.2.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "HD Tune",
+    "page": "https://www.hdtune.com/download.html",
+    "url": "https://www.hdtune.com/files/hdtune_255.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Bitwarden",
+    "page": "https://bitwarden.com/download/",
+    "url": "https://vault.bitwarden.com/download/?app=desktop&platform=windows",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Microsoft",
+    "page": "https://apps.microsoft.com/detail/9nblggh5l9xt",
+    "url": "https://get.microsoft.com/installer/download/9NBLGGH5L9XT?hl=en-us&gl=lk&referrer=store-for-web",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "WhatsApp",
+    "page": "https://www.whatsapp.com/download",
+    "url": "https://get.microsoft.com/installer/download/9NKSQGP7F2NH",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Zenodo",
+    "page": "https://zenodo.org/records/1261752",
+    "url": "https://zenodo.org/records/1261753/files/article.pdf",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "GOG",
+    "page": "https://www.gog.com/galaxy",
+    "url": "https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Spotify",
+    "page": "https://www.spotify.com/download/windows/",
+    "url": "https://download.scdn.co/SpotifySetup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Brave",
+    "page": "https://brave.com/download/",
+    "url": "https://laptop-updates.brave.com/latest/winx64",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "balenaEtcher",
+    "page": "https://etcher.balena.io/",
+    "url": "https://github.com/balena-io/etcher/archive/refs/tags/v1.19.25.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Tailscale",
+    "page": "https://tailscale.com/download/windows",
+    "url": "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "GitLab",
+    "page": "https://gitlab.com/gitlab-org/gitlab-runner",
+    "url": "https://gitlab.com/gitlab-org/gitlab-runner/-/archive/v17.0.0/gitlab-runner-v17.0.0.tar.gz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Rufus",
+    "page": "https://rufus.ie/en/",
+    "url": "https://github.com/pbatard/rufus/releases/download/v4.6/rufus-4.6p.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "7-Zip",
+    "page": "https://www.7-zip.org/download.html",
+    "url": "https://www.7-zip.org/a/7z2409-x64.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "SpaceSniffer",
+    "page": "http://www.uderzo.it/main_products/space_sniffer/download.html",
+    "url": "https://www.uderzo.it/main_products/space_sniffer/files/spacesniffer_1_3_0_2.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "PuTTY",
+    "page": "https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html",
+    "url": "https://the.earth.li/~sgtatham/putty/latest/w64/putty.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Alacritty",
+    "page": "https://alacritty.org/",
+    "url": "https://github.com/alacritty/alacritty/archive/refs/tags/v0.14.0.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "NordVPN",
+    "page": "https://nordvpn.com/download/windows/",
+    "url": "https://downloads.nordcdn.com/apps/windows/NordVPN/latest/NordVPNSetup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Everything",
+    "page": "https://www.voidtools.com/downloads/",
+    "url": "https://www.voidtools.com/Everything-1.4.1.1026.x64-Setup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Steam",
+    "page": "https://store.steampowered.com/about/",
+    "url": "https://cdn.akamai.steamstatic.com/client/installer/SteamSetup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Hugging Face",
+    "page": "https://huggingface.co/sshleifer/tiny-gpt2",
+    "url": "https://huggingface.co/sshleifer/tiny-gpt2/resolve/main/pytorch_model.bin",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Malwarebytes",
+    "page": "https://www.malwarebytes.com/mwb-download",
+    "url": "https://downloads.malwarebytes.com/file/mb-windows",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Process Lasso",
+    "page": "https://bitsum.com/",
+    "url": "https://bitsum.com/files/processlassosetup64.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "EaseUS",
+    "page": "https://www.easeus.com/backup-software/tb-free.html",
+    "url": "https://down.easeus.com/product/tb_free",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Geek Uninstaller",
+    "page": "https://geekuninstaller.com/download",
+    "url": "https://geekuninstaller.com/geek.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "KeePass",
+    "page": "https://keepass.info/download.html",
+    "url": "https://downloads.sourceforge.net/project/keepass/KeePass%202.x/2.57.1/KeePass-2.57.1.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Opera",
+    "page": "https://www.opera.com/download",
+    "url": "https://net.geo.opera.com/opera/stable/windows",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Mp3tag",
+    "page": "https://www.mp3tag.de/en/download.html",
+    "url": "https://download.mp3tag.de/versions/mp3tagv305setup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "PDFsam",
+    "page": "https://pdfsam.org/download-pdfsam-basic/",
+    "url": "https://github.com/torakiki/pdfsam/archive/refs/tags/v5.3.1.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "CPU-Z",
+    "page": "https://www.cpuid.com/softwares/cpu-z.html",
+    "url": "https://download.cpuid.com/cpu-z/cpu-z_2.12-en.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "BitTorrent",
+    "page": "https://www.bittorrent.com/downloads/windows/",
+    "url": "https://download-new.utorrent.com/endpoint/bittorrent/os/windows/track/stable/",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "uTorrent",
+    "page": "https://www.utorrent.com/downloads/win/",
+    "url": "https://download-hr.utorrent.com/track/stable/endpoint/utorrent/os/windows",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "WinRAR",
+    "page": "https://www.win-rar.com/download.html",
+    "url": "https://www.rarlab.com/rar/winrar-x64-701.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "mpv",
+    "page": "https://mpv.io/installation/",
+    "url": "https://github.com/mpv-player/mpv/archive/refs/tags/v0.39.0.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Core FTP",
+    "page": "https://www.coreftp.com/download.html",
+    "url": "https://www.coreftp.com/download/coreftplite64.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Battle.net",
+    "page": "https://download.battle.net/",
+    "url": "https://us.battle.net/download/getInstaller?os=win&installer=Battle.net-Setup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "WizTree",
+    "page": "https://diskanalyzer.com/download",
+    "url": "https://diskanalyzer.com/files/wiztree_4_24_setup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "OpenVPN",
+    "page": "https://openvpn.net/community-downloads/",
+    "url": "https://swupdate.openvpn.org/community/releases/OpenVPN-2.6.12-I001-amd64.msi",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Bulk Crap Uninstaller",
+    "page": "https://www.bcuninstaller.com/",
+    "url": "https://github.com/Klocman/Bulk-Crap-Uninstaller/archive/refs/tags/v5.8.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Linux Mint",
+    "page": "https://linuxmint.com/documentation.php",
+    "url": "https://linuxmint-installation-guide.readthedocs.io/_/downloads/en/latest/pdf/",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "SQLite",
+    "page": "https://www.sqlite.org/download.html",
+    "url": "https://www.sqlite.org/2026/sqlite-tools-win-x64-3530400.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Cryptomator",
+    "page": "https://cryptomator.org/downloads/",
+    "url": "https://github.com/cryptomator/cryptomator/archive/refs/tags/1.14.2.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Notepad++",
+    "page": "https://notepad-plus-plus.org/downloads/",
+    "url": "https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v8.7.5/npp.8.7.5.Installer.x64.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Syncthing",
+    "page": "https://syncthing.net/downloads/",
+    "url": "https://github.com/syncthing/syncthing/archive/refs/tags/v1.28.0.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "NASA",
+    "page": "https://www.nasa.gov/reference/artemis-iii/",
+    "url": "https://www.nasa.gov/wp-content/uploads/2026/01/artemis-ii-press-kit.pdf",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "CrystalIDEA",
+    "page": "https://crystalidea.com/uninstall-tool/download",
+    "url": "https://crystalidea.com/downloads/uninstalltool_setup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "SMPlayer",
+    "page": "https://www.smplayer.info/en/downloads",
+    "url": "https://github.com/smplayer-dev/smplayer/archive/refs/tags/v24.5.0.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "MusicBrainz Picard",
+    "page": "https://picard.musicbrainz.org/downloads/",
+    "url": "https://github.com/metabrainz/picard/archive/refs/tags/release-2.12.3.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Apache",
+    "page": "https://httpd.apache.org/download.cgi",
+    "url": "https://archive.apache.org/dist/httpd/httpd-2.4.63.tar.bz2",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "CrystalDiskInfo",
+    "page": "https://crystalmark.info/en/software/crystaldiskinfo/",
+    "url": "https://downloads.sourceforge.net/project/crystaldiskinfo/9.5.0/CrystalDiskInfo9_5_0.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "CutePDF",
+    "page": "https://www.cutepdf.com/Products/CutePDF/writer.asp",
+    "url": "https://www.cutepdf.com/download/CuteWriter.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "foobar2000",
+    "page": "https://www.foobar2000.org/download",
+    "url": "https://www.foobar2000.org/downloads/foobar2000-x64_v2.26.1.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Android",
+    "page": "https://developer.android.com/tools/releases/platform-tools",
+    "url": "https://dl.google.com/android/repository/platform-tools-latest-windows.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "SumatraPDF",
+    "page": "https://www.sumatrapdfreader.org/download-free-pdf-viewer",
+    "url": "https://www.sumatrapdfreader.org/dl/rel/3.5.2/SumatraPDF-3.5.2-64-install.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "AnyDesk",
+    "page": "https://anydesk.com/downloads/windows",
+    "url": "https://download.anydesk.com/AnyDesk.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Dropbox",
+    "page": "https://www.dropbox.com/install",
+    "url": "https://www.dropbox.com/download?plat=win",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "ESET",
+    "page": "https://www.eset.com/int/home/download/",
+    "url": "https://download.eset.com/com/eset/tools/installers/live_eis/latest/eset_internet_security_live_installer.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "FFmpeg",
+    "page": "https://ffmpeg.org/download.html",
+    "url": "https://ffmpeg.org/releases/ffmpeg-7.1.1.tar.xz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "GitHub",
+    "page": "https://github.com/git/git/releases",
+    "url": "https://github.com/git/git/archive/refs/tags/v2.47.0.tar.gz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "darktable",
+    "page": "https://www.darktable.org/install/",
+    "url": "https://github.com/darktable-org/darktable/archive/refs/tags/release-5.0.0.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "WinSCP",
+    "page": "https://winscp.net/eng/download.php",
+    "url": "https://winscp.net/download/WinSCP-6.3.7-Setup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "ZeroTier",
+    "page": "https://www.zerotier.com/download/",
+    "url": "https://download.zerotier.com/dist/ZeroTier%20One.msi",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "FastStone",
+    "page": "https://www.faststone.org/FSIVDownload.htm",
+    "url": "https://www.faststonesoft.net/DN/FSViewerSetup85.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Rust",
+    "page": "https://www.rust-lang.org/tools/install",
+    "url": "https://win.rustup.rs/x86_64",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "KeePassXC",
+    "page": "https://keepassxc.org/download/",
+    "url": "https://github.com/keepassxreboot/keepassxc/archive/refs/tags/2.7.9.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Shotcut",
+    "page": "https://shotcut.org/download/",
+    "url": "https://github.com/mltframework/shotcut/archive/refs/tags/v24.11.17.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "PHP",
+    "page": "https://www.php.net/downloads.php",
+    "url": "https://www.php.net/distributions/php-8.4.0.tar.xz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Roblox",
+    "page": "https://www.roblox.com/download",
+    "url": "https://setup.rbxcdn.com/RobloxPlayerInstaller.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Perl",
+    "page": "https://www.perl.org/get.html",
+    "url": "https://www.cpan.org/src/5.0/perl-5.40.0.tar.xz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Sublime Text",
+    "page": "https://www.sublimetext.com/download",
+    "url": "https://download.sublimetext.com/sublime_text_build_4192_x64_setup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "REAPER",
+    "page": "https://www.reaper.fm/download.php",
+    "url": "https://www.reaper.fm/files/7.x/reaper736_x64-install.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "TreeSize",
+    "page": "https://www.jam-software.com/treesize_free",
+    "url": "https://downloads.jam-software.de/treesize_free/TreeSizeFreeSetup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Ruby",
+    "page": "https://www.ruby-lang.org/en/downloads/",
+    "url": "https://cache.ruby-lang.org/pub/ruby/3.4/ruby-3.4.0.tar.xz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Tabby",
+    "page": "https://tabby.sh/",
+    "url": "https://github.com/Eugeny/tabby/archive/refs/tags/v1.0.215.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "WinMerge",
+    "page": "https://winmerge.org/downloads/",
+    "url": "https://github.com/WinMerge/winmerge/archive/refs/tags/v2.16.44.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "G'MIC",
+    "page": "https://gmic.eu/download.html",
+    "url": "https://gmic.eu/files/source/gmic_3.4.3.tar.gz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Revo Uninstaller",
+    "page": "https://www.revouninstaller.com/revo-uninstaller-free-download/",
+    "url": "https://revouninstaller.b-cdn.net/rup554/RevoUninProSetup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "AIMP",
+    "page": "https://www.aimp.ru/?do=download",
+    "url": "https://www.aimp.ru/?do=download.file&id=4",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "ImageMagick",
+    "page": "https://imagemagick.org/script/download.php",
+    "url": "https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.1-43.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "LMMS",
+    "page": "https://lmms.io/download",
+    "url": "https://github.com/LMMS/lmms/archive/refs/tags/v1.2.2.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Transmission",
+    "page": "https://transmissionbt.com/download",
+    "url": "https://github.com/transmission/transmission/releases/download/4.0.6/transmission-4.0.6-x64.msi",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Kdenlive",
+    "page": "https://kdenlive.org/download/",
+    "url": "https://invent.kde.org/multimedia/kdenlive/-/archive/v24.12.0/kdenlive-v24.12.0.tar.gz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Proton VPN",
+    "page": "https://protonvpn.com/download-windows",
+    "url": "https://github.com/ProtonVPN/win-app/archive/refs/tags/3.3.2.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "HWiNFO",
+    "page": "https://www.hwinfo.com/download/",
+    "url": "https://www.hwinfo.com/files/hwi64_854.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "PostgreSQL",
+    "page": "https://www.postgresql.org/ftp/source/",
+    "url": "https://ftp.postgresql.org/pub/source/v17.4/postgresql-17.4.tar.bz2",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "OpenSCAD",
+    "page": "https://openscad.org/downloads.html",
+    "url": "https://files.openscad.org/OpenSCAD-2021.01-x86-64-Installer.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "FreeFileSync",
+    "page": "https://freefilesync.org/download.php",
+    "url": "https://freefilesync.org/download/FreeFileSync_14.12_Windows_Setup.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Raspberry Pi",
+    "page": "https://www.raspberrypi.com/software/",
+    "url": "https://downloads.raspberrypi.org/imager/imager_latest.exe",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Tux Paint",
+    "page": "https://tuxpaint.org/download/windows/",
+    "url": "https://downloads.sourceforge.net/project/tuxpaint/tuxpaint/0.9.33/tuxpaint-0.9.33.tar.gz",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "MPC-HC",
+    "page": "https://mpc-hc.org/",
+    "url": "https://github.com/clsid2/mpc-hc/archive/refs/tags/2.3.0.zip",
+    "sample": "Publisher download or source archive"
+  },
+  {
+    "site": "Mozilla",
+    "url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    "page": "",
+    "sample": "MP4 video"
+  },
+  {
+    "site": "Mozilla",
+    "url": "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.webm",
+    "page": "",
+    "sample": "WebM video"
+  },
+  {
+    "site": "Mozilla",
+    "url": "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3",
+    "page": "",
+    "sample": "MP3 audio"
+  },
+  {
+    "site": "Wikimedia Commons",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/7/70/Example.png",
+    "page": "",
+    "sample": "PNG image"
+  },
+  {
+    "site": "Wikimedia Commons",
+    "url": "https://upload.wikimedia.org/wikipedia/commons/8/84/Example.svg",
+    "page": "",
+    "sample": "SVG image"
+  },
+  {
+    "site": "GitHub",
+    "url": "https://raw.githubusercontent.com/plotly/datasets/master/2014_usa_states.csv",
+    "page": "",
+    "sample": "CSV data"
+  },
+  {
+    "site": "GitHub",
+    "url": "https://raw.githubusercontent.com/vega/vega-datasets/main/data/cars.json",
+    "page": "",
+    "sample": "JSON data"
+  },
+  {
+    "site": "Rust",
+    "url": "https://raw.githubusercontent.com/rust-lang/rust/master/LICENSE-MIT",
+    "page": "",
+    "sample": "TXT license"
+  },
+  {
+    "site": "Rust",
+    "url": "https://raw.githubusercontent.com/rust-lang/rust/master/Cargo.toml",
+    "page": "",
+    "sample": "TOML source"
+  },
+  {
+    "site": "Project Gutenberg",
+    "url": "https://www.gutenberg.org/cache/epub/11/pg11.txt",
+    "page": "",
+    "sample": "TXT ebook"
+  }
+]

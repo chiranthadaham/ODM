@@ -24,5 +24,6 @@ try {
     Copy-Item -Path (Join-Path $PSScriptRoot 'browser/*') -Destination $bin -Recurse -Force
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'licenses') -Destination $bin -Recurse -Force
     Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'RELEASE-README.txt') -Destination (Join-Path $bin 'README.txt') -Force
+    Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'browser-stores.json') -Destination $bin -Force
     Write-Host "Built $bin\OpenDownloadManager.exe"
 } finally { $env:CARGO_ENCODED_RUSTFLAGS=$previousFlags; $env:ODM_ZIG=$previousZig; $env:ZIG_GLOBAL_CACHE_DIR=$previousCache }

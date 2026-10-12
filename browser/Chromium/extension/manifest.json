@@ -1,14 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Open Download Manager",
-  "version": "2.6.0",
-  "description": "Send links and YouTube pages to Open Download Manager, with optional automatic file capture.",
+  "version": "2.7.0",
+  "description": "Capture file downloads and selected media links with the installed Open Download Manager desktop app.",
   "permissions": [
     "nativeMessaging",
     "downloads",
     "contextMenus",
     "storage",
-    "activeTab",
     "webRequest"
   ],
   "background": {
@@ -28,7 +27,14 @@
         "compat.js",
         "filesamples.js"
       ],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "exclude_matches": [
+        "*://youtube.com/*",
+        "*://*.youtube.com/*",
+        "*://youtu.be/*",
+        "*://*.youtube-nocookie.com/*",
+        "*://*.googlevideo.com/*"
+      ]
     },
     {
       "matches": [
@@ -40,7 +46,14 @@
         "video-button.js"
       ],
       "run_at": "document_idle",
-      "all_frames": true
+      "all_frames": true,
+      "exclude_matches": [
+        "*://youtube.com/*",
+        "*://*.youtube.com/*",
+        "*://youtu.be/*",
+        "*://*.youtube-nocookie.com/*",
+        "*://*.googlevideo.com/*"
+      ]
     },
     {
       "matches": [
@@ -52,7 +65,14 @@
         "download-links.js"
       ],
       "run_at": "document_start",
-      "all_frames": true
+      "all_frames": true,
+      "exclude_matches": [
+        "*://youtube.com/*",
+        "*://*.youtube.com/*",
+        "*://youtu.be/*",
+        "*://*.youtube-nocookie.com/*",
+        "*://*.googlevideo.com/*"
+      ]
     }
   ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs1vj6Cf9WuUjzYdCEJsszBkDcBJONhtosr0h6WJHfmqRc3itrS/ny0LWw3tCf4ZtL+2KgGupyw+SASFvr6Sader5ZWrzdf0jfO+XelYVgMeWBYXonJkb7zbygFhJ6zW5cj8PE82tjNF68fWw2fcSn8gpSkPpZK/IMYvw6jQoC784MD1vSjUfheqmsus9L4nHgtKQuPcSuugudk2iGoV3mPpbu8gj6yxtYBQBndFC61wloQngB+jZ4DJd4ZJo6+D1ivMpMnriWjU1L9G59eV3RdGUtqNu9mhG33t/6SHxldxxD+7f3h2fwEnmbIJ3xg8izR5gdVZstHbpZ0oWMmrrZwIDAQAB",
@@ -65,5 +85,10 @@
     "default_title": "Open Download Manager",
     "default_popup": "popup.html",
     "default_icon": "icon.png"
+  },
+  "incognito": "not_allowed",
+  "options_ui": {
+    "page": "consent.html",
+    "open_in_tab": true
   }
 }

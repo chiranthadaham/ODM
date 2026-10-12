@@ -140,13 +140,36 @@ fn http_transfer(engine: &Arc<Engine>, j: &Arc<Job>) -> Result<(), String> {
     }
     let mut probe = None;
     for depth in 0..5 {
-        let response = http::request(
+        let mut response = http::request(
             engine,
             j,
             &address,
             if depth == 0 { Some("0-0") } else { None },
             None,
         )?;
+        // Some publishers reject a tiny range probe while accepting a normal GET.
+        // Retry once without Range; an actual access refusal still fails normally.
+        if depth == 0 && matches!(response.status, 403 | 405 | 416 | 429) {
+            if response.status == 429 {
+                let retry = response.header(win::WINHTTP_QUERY_RETRY_AFTER);
+                let seconds = if retry.is_empty() {
+                    2
+                } else {
+                    match retry.parse::<u64>() {
+                        Ok(n) if n <= 30 => n,
+                        _ => return Err(http::status_error(response.status)),
+                    }
+                };
+                for _ in 0..seconds * 10 {
+                    if j.stopped() {
+                        return Ok(());
+                    }
+                    std::thread::sleep(Duration::from_millis(100));
+                }
+            }
+            drop(response);
+            response = http::request(engine, j, &address, None, None)?;
+        }
         if response.status >= 400 {
             return Err(http::status_error(response.status));
         }
@@ -178,7 +201,9 @@ fn http_transfer(engine: &Arc<Engine>, j: &Arc<Job>) -> Result<(), String> {
         return sequential(engine, j, None, &address);
     }
     drop(probe);
-    let mut count = (total / (256 * 1024)).clamp(2, 128) as usize;
+    let mut count = (total / (2 * 1024 * 1024))
+        .max(engine.connections.load(Ordering::Relaxed) as u64)
+        .clamp(2, 128) as usize;
     let mut meta = Metadata {
         url: address.clone(),
         validator: validator.clone(),
@@ -377,6 +402,19 @@ pub fn run(engine: Arc<Engine>, j: Arc<Job>) {
                 let mut result = Ok(());
                 for attempt in 0..3 {
                     result = http_transfer(&engine, &j);
+                    let path = j.snapshot().path;
+                    if matches!(&result, Err(e) if e.starts_with("HTTP request") && e.contains("Windows error 12002"))
+                        && !j.stopped()
+                        && j.done.load(Ordering::Relaxed) == 0
+                        && !http::partial(&path).exists()
+                        && !PathBuf::from(format!("{}.segments", path.display())).exists()
+                    {
+                        // A fresh request timed out before receiving any data. Try the
+                        // alternate Windows transport without touching resumable files.
+                        j.set_error("Trying an alternate connection…".into());
+                        result = crate::process::curl_download(&engine, &j);
+                        break;
+                    }
                     let transient = match &result {
                         Err(e) => [
                             "Windows error 12002",

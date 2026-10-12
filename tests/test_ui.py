@@ -7,6 +7,7 @@ EXE=Path(sys.argv.pop(1)).resolve()
 u=c.WinDLL('user32',use_last_error=True)
 u.FindWindowW.argtypes=[w.LPCWSTR,w.LPCWSTR];u.FindWindowW.restype=w.HWND
 u.GetDlgItem.argtypes=[w.HWND,c.c_int];u.GetDlgItem.restype=w.HWND
+u.GetClientRect.argtypes=[w.HWND,c.POINTER(w.RECT)];u.GetClientRect.restype=w.BOOL
 u.SendMessageW.argtypes=[w.HWND,w.UINT,w.WPARAM,w.LPARAM];u.SendMessageW.restype=w.LPARAM
 u.PostMessageW.argtypes=[w.HWND,w.UINT,w.WPARAM,w.LPARAM]
 u.SetWindowTextW.argtypes=[w.HWND,w.LPCWSTR]
@@ -67,6 +68,20 @@ class Tests(unittest.TestCase):
             app=subprocess.Popen([str(EXE)],env=env)
             try:
                 h=wait(lambda:u.FindWindowW('OpenDownloadManagerRust',None))
+                self.assertFalse(u.GetDlgItem(h,123), 'Organize button must be removed')
+                wait(lambda:u.GetDlgItem(h,124))
+                self.assertEqual(getfield(h,124),'Browser plug-in')
+                subprocess.run([str(EXE),'--background','--browser-plugins'],env=env,timeout=5)
+                plugin=wait(lambda:popup('Browser plug-in'))
+                self.assertEqual(getfield(plugin,701),'Chrome')
+                self.assertEqual(getfield(plugin,702),'Firefox')
+                click(plugin,2);wait(lambda:not popup('Browser plug-in'))
+                table=wait(lambda:u.GetDlgItem(h,130))
+                def columns_fit():
+                    bounds=w.RECT()
+                    if not u.GetClientRect(table,c.byref(bounds)):return False
+                    return sum(send(table,0x101D,i) for i in range(8))<=bounds.right
+                wait(columns_fit)
                 click(h,122);new=wait(lambda:popup('New download'))
                 setfield(new,600,url);setfield(new,601,str(root));click(new,604)
                 start=wait(lambda:popup('New download — Save and Start'))

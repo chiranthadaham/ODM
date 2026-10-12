@@ -2,10 +2,10 @@
 // Sites may fetch a file and click an invisible blob-backed download link.
 // Resolve only an exact filename from this frame's recent attachment responses.
 (()=>{
- let enabled=true;
+ let enabled=false, localCapture=true, localConsent=false;
  const bypass=new WeakSet();
- browser.storage.local.get({capture:true}).then(s=>enabled=s.capture);
- browser.storage.onChanged.addListener((changes,area)=>{if(area==="local"&&changes.capture)enabled=changes.capture.newValue;});
+ browser.storage.local.get({capture:true,consentVersion:0}).then(s=>{localCapture=s.capture;localConsent=s.consentVersion===1;enabled=localCapture&&localConsent;});
+ browser.storage.onChanged.addListener((changes,area)=>{if(area!=="local")return;if(changes.capture)localCapture=changes.capture.newValue!==false;if(changes.consentVersion)localConsent=changes.consentVersion.newValue===1;enabled=localCapture&&localConsent;});
  function failure(message,url){
   const box=document.createElement("div");box.setAttribute("role","alert");box.style.cssText="position:fixed;bottom:20px;right:20px;z-index:2147483647;max-width:420px;padding:18px;background:white;color:#1e293b;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 4px 20px #0003;font:14px system-ui";
   const text=document.createElement("p");text.textContent=message;box.append(text);

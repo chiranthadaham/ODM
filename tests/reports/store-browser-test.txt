@@ -1,0 +1,140 @@
+Chrome: CAPTURE chrome.zip canceled {
+  status: 'Sent to Open Download Manager.',
+  consent: true,
+  capture: true,
+  items: [
+    {
+      bytesReceived: 0,
+      canResume: false,
+      danger: 'safe',
+      error: 'USER_CANCELED',
+      exists: true,
+      fileSize: 983040,
+      filename: '',
+      finalUrl: 'http://127.0.0.1:52183/chrome.zip',
+      id: 1,
+      incognito: false,
+      mime: 'application/octet-stream',
+      paused: true,
+      referrer: 'http://127.0.0.1:52183/page',
+      startTime: '2026-10-11T19:42:17.589Z',
+      state: 'interrupted',
+      totalBytes: 983040,
+      url: 'http://127.0.0.1:52183/chrome.zip'
+    }
+  ]
+}
+CAPTURE chrome.pdf canceled {
+  status: 'Sent to Open Download Manager.',
+  consent: true,
+  capture: true,
+  items: [
+    {
+      bytesReceived: 0,
+      canResume: false,
+      danger: 'safe',
+      error: 'USER_CANCELED',
+      exists: true,
+      fileSize: 983040,
+      filename: '',
+      finalUrl: 'http://127.0.0.1:52183/chrome.pdf',
+      id: 2,
+      incognito: false,
+      mime: 'application/octet-stream',
+      paused: true,
+      referrer: 'http://127.0.0.1:52183/page',
+      startTime: '2026-10-11T19:42:19.486Z',
+      state: 'interrupted',
+      totalBytes: 983040,
+      url: 'http://127.0.0.1:52183/chrome.pdf'
+    },
+    {
+      bytesReceived: 0,
+      canResume: false,
+      danger: 'safe',
+      error: 'USER_CANCELED',
+      exists: true,
+      fileSize: 983040,
+      filename: '',
+      finalUrl: 'http://127.0.0.1:52183/chrome.zip',
+      id: 1,
+      incognito: false,
+      mime: 'application/octet-stream',
+      paused: true,
+      referrer: 'http://127.0.0.1:52183/page',
+      startTime: '2026-10-11T19:42:17.589Z',
+      state: 'interrupted',
+      totalBytes: 983040,
+      url: 'http://127.0.0.1:52183/chrome.zip'
+    }
+  ]
+}
+CAPTURE chrome.future canceled {
+  status: 'Sent to Open Download Manager.',
+  consent: true,
+  capture: true,
+  items: [
+    {
+      bytesReceived: 0,
+      canResume: false,
+      danger: 'safe',
+      error: 'USER_CANCELED',
+      exists: true,
+      fileSize: 983040,
+      filename: '',
+      finalUrl: 'http://127.0.0.1:52183/chrome.future',
+      id: 3,
+      incognito: false,
+      mime: 'application/octet-stream',
+      paused: true,
+      referrer: 'http://127.0.0.1:52183/page',
+      startTime: '2026-10-11T19:42:21.240Z',
+      state: 'interrupted',
+      totalBytes: 983040,
+      url: 'http://127.0.0.1:52183/chrome.future'
+    },
+    {
+      bytesReceived: 0,
+      canResume: false,
+      danger: 'safe',
+      error: 'USER_CANCELED',
+      exists: true,
+      fileSize: 983040,
+      filename: '',
+      finalUrl: 'http://127.0.0.1:52183/chrome.pdf',
+      id: 2,
+      incognito: false,
+      mime: 'application/octet-stream',
+      paused: true,
+      referrer: 'http://127.0.0.1:52183/page',
+      startTime: '2026-10-11T19:42:19.486Z',
+      state: 'interrupted',
+      totalBytes: 983040,
+      url: 'http://127.0.0.1:52183/chrome.pdf'
+    },
+    {
+      bytesReceived: 0,
+      canResume: false,
+      danger: 'safe',
+      error: 'USER_CANCELED',
+      exists: true,
+      fileSize: 983040,
+      filename: '',
+      finalUrl: 'http://127.0.0.1:52183/chrome.zip',
+      id: 1,
+      incognito: false,
+      mime: 'application/octet-stream',
+      paused: true,
+      referrer: 'http://127.0.0.1:52183/page',
+      startTime: '2026-10-11T19:42:17.589Z',
+      state: 'interrupted',
+      totalBytes: 983040,
+      url: 'http://127.0.0.1:52183/chrome.zip'
+    }
+  ]
+}
+{"browser":"154.0.8037.98","id":"jancefngmifbnaldahilleoinncjppjh","nativePing":true,"consentRequired":true,"revocation":true,"youtubeBlocked":true,"captured":["zip","pdf","future"],"popupErrors":[]}
+ 
+PASS: Chrome downloaded three formats through installed native host; SHA-256 identical
+Firefox: [{"ping": {"ok": true, "version": "0.2.0-rust"}, "manual": {"ok": true, "queued": true}, "capture": {"state": "interrupted", "error": "CRASH"}}]
+PASS: Firefox explicit consent, installed native ping, manual and automatic downloads; SHA-256 identical

@@ -1,9 +1,9 @@
 "use strict";
 // Capture explicit sample-file clicks, including formats that Firefox would display inline.
 // Site navigation and page resources continue normally. No extension list restricts this route.
-let enabled=true;
-browser.storage.local.get({capture:true}).then(settings=>enabled=settings.capture);
-browser.storage.onChanged.addListener((changes,area)=>{if(area==="local"&&changes.capture)enabled=changes.capture.newValue;});
+let enabled=false, localCapture=true, localConsent=false;
+browser.storage.local.get({capture:true,consentVersion:0}).then(s=>{localCapture=s.capture;localConsent=s.consentVersion===1;enabled=localCapture&&localConsent;});
+browser.storage.onChanged.addListener((changes,area)=>{if(area!=="local")return;if(changes.capture)localCapture=changes.capture.newValue!==false;if(changes.consentVersion)localConsent=changes.consentVersion.newValue===1;enabled=localCapture&&localConsent;});
 function sampleLink(url){try{const u=new URL(url);return u.protocol==="https:"&&["filesamples.com","www.filesamples.com"].includes(u.hostname.toLowerCase())&&/^\/samples\/[^/]+\/[^/]+\/[^/]+/.test(u.pathname);}catch{return false;}}
 function showFailure(message,url){
  const box=document.createElement("div");box.setAttribute("role","alert");box.style.cssText="position:fixed;bottom:20px;right:20px;z-index:2147483647;max-width:420px;padding:18px;background:#fff;color:#1e293b;border:1px solid #cbd5e1;border-radius:12px;box-shadow:0 4px 20px #0003;font:14px system-ui";

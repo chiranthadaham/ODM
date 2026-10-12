@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 $key='HKCU:\Software\Mozilla\NativeMessagingHosts\com.opendownloadmanager'
-$manifest=Join-Path $PSScriptRoot 'native-host.json'
+$manifest=Join-Path $env:LOCALAPPDATA 'Programs/Open Download Manager/Firefox/native-host.json'
 if (Test-Path -LiteralPath $key) {
     $registered=(Get-Item -LiteralPath $key).GetValue('')
     if ($registered -eq $manifest) { Remove-Item -LiteralPath $key; Write-Host 'Firefox connection removed.' }

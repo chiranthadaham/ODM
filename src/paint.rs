@@ -1,10 +1,10 @@
 use crate::win::*;
 use std::sync::OnceLock;
-pub const BG: u32 = 0x00faf5f2;
+pub const BG: u32 = 0x00faf8f6;
 pub const INK: u32 = 0x003b291e;
-pub const MUTED: u32 = 0x008b7464;
+pub const MUTED: u32 = 0x00867568;
 pub const BLUE: u32 = 0x00ff7a00;
-pub const BORDER: u32 = 0x00ede2db;
+pub const BORDER: u32 = 0x00ede7e2;
 pub const WHITE: u32 = 0x00ffffff;
 #[repr(C)]
 struct Startup {

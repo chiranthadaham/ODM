@@ -1,0 +1,3 @@
+PASS: fixed folder, executable hash, startup tray, native manifests, Browser plug-in dialog
+PASS: uninstall removed installed app and its own startup/native registrations
+PASS: reinstall restored app and browser connections

@@ -10,6 +10,7 @@ use std::{
 };
 pub struct Internet(*mut c_void);
 unsafe impl Send for Internet {}
+unsafe impl Sync for Internet {}
 impl Internet {
     fn new(h: *mut c_void) -> Result<Self, String> {
         if h.is_null() {
@@ -26,9 +27,12 @@ impl Drop for Internet {
         }
     }
 }
-pub struct Response {
+pub struct Connection {
+    handle: Internet,
     _session: Internet,
-    _connection: Internet,
+}
+pub struct Response {
+    _connection: Arc<Connection>,
     pub handle: Arc<AtomicPtr<c_void>>,
     finished: Arc<AtomicBool>,
     pub status: u32,
@@ -126,35 +130,70 @@ pub fn request(
     };
     let proxy_wide = wide(proxy);
     unsafe {
-        let session = Internet::new(WinHttpOpen(
-            wide(agent).as_ptr(),
-            if proxy.is_empty() {
-                WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY
-            } else {
-                WINHTTP_ACCESS_TYPE_NAMED_PROXY
-            },
-            if proxy.is_empty() {
-                null()
-            } else {
-                proxy_wide.as_ptr()
-            },
-            null(),
-            0,
-        ))?;
-        WinHttpSetTimeouts(session.0, 10000, 10000, 10000, 30000);
-        let conn = Internet::new(WinHttpConnect(
-            session.0,
-            wide(url.host_str().unwrap_or("")).as_ptr(),
-            url.port_or_known_default().unwrap_or(80),
-            0,
-        ))?;
+        use sha2::{Digest, Sha256};
+        // Pool separately by origin, browser context and network credentials.
+        // WinHTTP supports concurrent request handles on one connection handle.
+        let key = format!(
+            "{:x}",
+            Sha256::digest(
+                serde_json::to_vec(&(url.origin().ascii_serialization(), agent, &config))
+                    .map_err(|e| e.to_string())?
+            )
+        );
+        let mut pool = engine.http_pool.lock().unwrap();
+        let connection = if let Some(position) = pool.iter().position(|(k, _)| k == &key) {
+            let entry = pool.remove(position);
+            let connection = entry.1.clone();
+            pool.push(entry);
+            connection
+        } else {
+            let session = Internet::new(WinHttpOpen(
+                wide(agent).as_ptr(),
+                if proxy.is_empty() {
+                    WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY
+                } else {
+                    WINHTTP_ACCESS_TYPE_NAMED_PROXY
+                },
+                if proxy.is_empty() {
+                    null()
+                } else {
+                    proxy_wide.as_ptr()
+                },
+                null(),
+                0,
+            ))?;
+            WinHttpSetTimeouts(session.0, 10000, 10000, 10000, 30000);
+            let protocols = WINHTTP_PROTOCOL_FLAG_HTTP2;
+            WinHttpSetOption(
+                session.0,
+                WINHTTP_OPTION_ENABLE_HTTP_PROTOCOL,
+                (&protocols as *const u32).cast(),
+                4,
+            );
+            let conn = Internet::new(WinHttpConnect(
+                session.0,
+                wide(url.host_str().unwrap_or("")).as_ptr(),
+                url.port_or_known_default().unwrap_or(80),
+                0,
+            ))?;
+            let connection = Arc::new(Connection {
+                handle: conn,
+                _session: session,
+            });
+            if pool.len() >= 16 {
+                pool.remove(0);
+            }
+            pool.push((key, connection.clone()));
+            connection
+        };
+        drop(pool);
         let resource = format!(
             "{}{}",
             url.path(),
             url.query().map(|q| format!("?{q}")).unwrap_or_default()
         );
         let h = WinHttpOpenRequest(
-            conn.0,
+            connection.handle.0,
             wide("GET").as_ptr(),
             wide(resource).as_ptr(),
             null(),
@@ -172,8 +211,7 @@ pub fn request(
         let handle = Arc::new(AtomicPtr::new(h));
         let finished = Arc::new(AtomicBool::new(false));
         let mut response = Response {
-            _session: session,
-            _connection: conn,
+            _connection: connection,
             handle: handle.clone(),
             finished: finished.clone(),
             status: 0,

@@ -19,6 +19,7 @@ pub enum Kind {
     Progress(Arc<Job>),
     Complete(Arc<Job>),
     Settings,
+    BrowserPlugins,
     Network,
     Renew(Arc<Job>),
 }
@@ -71,6 +72,7 @@ pub unsafe fn open(a: &mut App, kind: Kind) {
         Kind::Progress(_) => ("Download progress", 650, 275),
         Kind::Complete(_) => ("Download complete", 640, 205),
         Kind::Settings => ("Settings", 510, 310),
+        Kind::BrowserPlugins => ("Browser plug-in", 560, 245),
         Kind::Network => ("Connection settings", 700, 570),
         Kind::Renew(_) => ("Renew download link", 700, 240),
     };
@@ -122,6 +124,31 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
             paint::modern(h);
             let f = a.font;
             match &p.kind {
+                Kind::BrowserPlugins => {
+                    label(h, "Choose your browser", 700, 24, 20, 480, 28, f);
+                    label(
+                        h,
+                        "Open its official extension store to install the plug-in.",
+                        703,
+                        24,
+                        56,
+                        490,
+                        28,
+                        f,
+                    );
+                    button(h, "Chrome", 701, 24, 100, 240, f);
+                    button(h, "Firefox", 702, 280, 100, 240, f);
+                    label(
+                        h,
+                        "Until published, these buttons open a store search.",
+                        704,
+                        24,
+                        150,
+                        490,
+                        28,
+                        a.small,
+                    );
+                }
                 Kind::New => {
                     label(h, "Link", 610, 24, 18, 600, 24, f);
                     edit(h, "", 600, 24, 44, 566, f, 0);
@@ -321,6 +348,38 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                 return 0;
             }
             match id {
+                701 | 702 => {
+                    let chrome = id == 701;
+                    let key = if chrome {
+                        "chrome_store_url"
+                    } else {
+                        "firefox_store_url"
+                    };
+                    let fallback = if chrome {
+                        "https://chromewebstore.google.com/search/Open%20Download%20Manager"
+                    } else {
+                        "https://addons.mozilla.org/en-US/firefox/search/?q=Open%20Download%20Manager"
+                    };
+                    let file = std::env::current_exe()
+                        .ok()
+                        .and_then(|p| p.parent().map(|d| d.join("browser-stores.json")));
+                    let config: Value = file
+                        .and_then(|p| std::fs::read(p).ok())
+                        .and_then(|b| serde_json::from_slice(&b).ok())
+                        .unwrap_or(Value::Null);
+                    let candidate = config[key].as_str().unwrap_or(fallback);
+                    let prefix = if chrome {
+                        "https://chromewebstore.google.com/"
+                    } else {
+                        "https://addons.mozilla.org/"
+                    };
+                    let url = if candidate.starts_with(prefix) {
+                        candidate
+                    } else {
+                        fallback
+                    };
+                    open_browser_store(chrome, url);
+                }
                 602 => {
                     if let Some(s) = clipboard(h) {
                         set_text(GetDlgItem(h, 600), s.trim());
@@ -339,6 +398,7 @@ pub unsafe extern "system" fn proc(h: HWND, msg: u32, wp: usize, lp: isize) -> i
                         a.folder = value(h, 601).into();
                         a.choices.push_back(serde_json::json!({"url":u}));
                         PostMessageW(h, WM_CLOSE, 0, 0);
+                        PostMessageW(a.h, WM_APP + 74, 0, 0);
                     }
                 }
                 202 => {

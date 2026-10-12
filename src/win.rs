@@ -67,6 +67,45 @@ pub fn shell_open(path: &std::path::Path) {
         CoUninitialize();
     });
 }
+pub fn open_browser_store(chrome: bool, address: &str) {
+    let Ok(url) = url::Url::parse(address) else {
+        return;
+    };
+    let host = if chrome {
+        "chromewebstore.google.com"
+    } else {
+        "addons.mozilla.org"
+    };
+    if url.scheme() != "https" || url.host_str() != Some(host) {
+        return;
+    }
+    let address = format!("\"{}\"", url.as_str());
+    std::thread::spawn(move || unsafe {
+        CoInitializeEx(null(), COINIT_APARTMENTTHREADED as u32);
+        let result = ShellExecuteW(
+            null_mut(),
+            wide("open").as_ptr(),
+            wide(if chrome { "chrome.exe" } else { "firefox.exe" }).as_ptr(),
+            wide(address).as_ptr(),
+            null(),
+            SW_SHOWNORMAL,
+        );
+        if result as isize <= 32 {
+            MessageBoxW(
+                null_mut(),
+                wide(if chrome {
+                    "Chrome was not found. Install Chrome, then try again."
+                } else {
+                    "Firefox was not found. Install Firefox, then try again."
+                })
+                .as_ptr(),
+                wide("Browser plug-in").as_ptr(),
+                MB_OK | MB_ICONINFORMATION,
+            );
+        }
+        CoUninitialize();
+    });
+}
 pub fn move_replace(from: &std::path::Path, to: &std::path::Path) -> Result<(), String> {
     if unsafe {
         MoveFileExW(

@@ -8,6 +8,13 @@ class Server(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         route=self.path;rg=self.headers.get('Range','')
         with self.lock:self.requests.append((route,rg))
+        if (route.startswith('/probe-') and rg) or route=='/always-limited.exe':
+            code=int(route.split('-')[1].split('.')[0]) if route.startswith('/probe-') else 429
+            self.send_response(code)
+            if code==429:self.send_header('Retry-After','1')
+            self.send_header('Content-Length','0');self.end_headers();return
+        if route=='/long-delay.exe':
+            self.send_response(429);self.send_header('Retry-After','60');self.send_header('Content-Length','0');self.end_headers();return
         if route=='/publisher.exe':
             self.send_response(302);self.send_header('Location','/landing/file.exe');self.end_headers();return
         if route in ['/landing/file.exe','/loop.exe','/unsafe.exe']:
@@ -37,6 +44,22 @@ class Tests(unittest.TestCase):
         self.assertEqual(self.download('/full.exe'),0,self.report);self.assertEqual(self.target.read_bytes(),DATA);self.assertEqual(len(Server.requests),1)
     def test_parallel_limit_falls_back_with_integrity(self):
         self.assertEqual(self.download('/limited.exe'),0,self.report);self.assertEqual(self.target.read_bytes(),DATA);self.assertIn('Connections: 1',self.report)
+    def test_rejected_probe_uses_normal_get(self):
+        for code in (403,405,416):
+            with self.subTest(code=code):
+                Server.requests=[]
+                if self.target.exists():self.target.unlink()
+                self.assertEqual(self.download(f'/probe-{code}.exe'),0,self.report)
+                self.assertEqual(self.target.read_bytes(),DATA)
+                self.assertEqual([r[1] for r in Server.requests],['bytes=0-0',''])
+    def test_rate_limited_probe_respects_retry_after(self):
+        began=time.monotonic();self.assertEqual(self.download('/probe-429.exe'),0,self.report)
+        self.assertGreaterEqual(time.monotonic()-began,.95);self.assertEqual(self.target.read_bytes(),DATA)
+        self.assertEqual([r[1] for r in Server.requests],['bytes=0-0',''])
+    def test_long_retry_after_does_not_retry_early(self):
+        self.assertEqual(self.download('/long-delay.exe'),1);self.assertEqual(len(Server.requests),1);self.assertFalse(self.target.exists())
+    def test_actual_rate_limit_is_bounded(self):
+        self.assertEqual(self.download('/always-limited.exe'),1);self.assertEqual(len(Server.requests),2);self.assertFalse(self.target.exists())
     def test_relative_refresh_uses_final_http_destination(self):
         self.assertEqual(self.download('/publisher.exe'),0,self.report);self.assertEqual(self.target.read_bytes(),DATA);self.assertIn(('/final.exe?one=1&two=2',''),Server.requests)
     def test_refresh_loop_is_bounded(self):

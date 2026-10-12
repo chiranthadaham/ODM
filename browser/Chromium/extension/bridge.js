@@ -8,6 +8,6 @@ function nativeRequest(host,message){
   port.postMessage(message);
  });
 }
-const browser={storage:chrome.storage,downloads:chrome.downloads,webRequest:chrome.webRequest,contextMenus:chrome.contextMenus,browserAction:chrome.action,
- runtime:{onInstalled:chrome.runtime.onInstalled,sendNativeMessage:nativeRequest,onMessage:{addListener(handler){chrome.runtime.onMessage.addListener((message,sender,respond)=>{Promise.resolve(handler(message,sender)).then(respond,error=>respond({ok:false,error:error.message}));return true;});}}}};
+const browser={tabs:chrome.tabs,storage:chrome.storage,downloads:chrome.downloads,webRequest:chrome.webRequest,contextMenus:chrome.contextMenus,browserAction:chrome.action,
+ runtime:{getURL:chrome.runtime.getURL,onInstalled:chrome.runtime.onInstalled,sendNativeMessage:nativeRequest,onMessage:{addListener(handler){chrome.runtime.onMessage.addListener((message,sender,respond)=>{Promise.resolve(handler(message,sender)).then(respond,error=>respond({ok:false,error:error.message}));return true;});}}}};
 

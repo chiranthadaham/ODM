@@ -1,3 +1,5 @@
 *.cab filter=lfs diff=lfs merge=lfs -text
 *.rs text eol=lf
 *.ps1 text eol=crlf
+licenses/** linguist-vendored
+tests/reports/** linguist-generated

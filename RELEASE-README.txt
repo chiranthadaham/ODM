@@ -1,7 +1,11 @@
 OPEN DOWNLOAD MANAGER — RUST EDITION 0.2.0
 Windows 10 / 11, 64-bit
 
-Run OpenDownloadManager.exe. The application is native Rust, with the same
+Run ODM-Setup-0.2.0.exe. Setup installs per user at
+%LOCALAPPDATA%\Programs\Open Download Manager, registers browser connections,
+and adds automatic tray startup at Windows sign-in.
+
+Open ODM from the Start menu or system tray. The application is native Rust, with the same
 Windows interface and download workflow as the previous ODM application.
 
 Click + to add a URL. Choose its save location and click Start download.
@@ -15,25 +19,16 @@ The trash icon removes selected queue entries; Clear all removes inactive
 entries. These actions keep downloaded files on disk.
 
 BROWSER INTEGRATION
-Run Firefox\Install.cmd or Chromium\Install.cmd and follow its instructions.
-The scripts register this Rust executable for the current Windows user.
-This switches the browser's ODM connection to this edition. To switch back,
-run the installer in the original ODM folder.
+Click Browser plug-in and choose Chrome or Firefox. Store listings are not
+published yet; these buttons currently open official store searches. Upload
+ZIPs and publisher instructions are in Store-Uploads. Firefox needs AMO signing
+for permanent installation. Chrome listing ID must be configured before release.
+Accept the extension privacy screen before use. Chrome excludes YouTube
+downloads to meet store policy. The desktop video feature remains available.
+Setup opens the browser chooser after installation. Each button opens its
+specific browser. Browser confirmation is required to install an extension.
 
-Firefox: about:debugging -> This Firefox -> Load Temporary Add-on, then
-choose Firefox\extension\manifest.json. Temporary add-ons must be loaded
-again after restarting Firefox unless separately signed and installed.
+Startup can be disabled in Windows Startup apps. Uninstall via Windows
+Installed apps. User downloads and local queue data are retained.
+Exit ODM from its tray menu before upgrading. Setup is currently unsigned.
 
-Chromium / Chrome / Edge / Brave / Vivaldi: open the extensions page,
-enable Developer mode, choose Load unpacked, then Chromium\extension.
-
-The bundled video tools extract into a verified per-user cache on first use.
-FTP and SOCKS transfers use the curl supplied with modern Windows.
-
-Source code is in the sibling Source folder. Tests and build instructions
-are included there. Third-party licenses are in licenses; keep that folder
-with the application when redistributing it.
-
-The previous ODM installation is preserved. Rust stores its queue and
-encrypted credentials under %LOCALAPPDATA%\OpenDownloadManagerRust, and
-imports the previous saved queue on first use when no Rust queue exists.

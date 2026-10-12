@@ -1,0 +1,16 @@
+[
+  {
+    "browser": "Firefox",
+    "passed": true,
+    "metadataEvents": 40,
+    "storageReads": 1,
+    "seconds": 0.04598950000000001
+  },
+  {
+    "browser": "Chromium",
+    "passed": true,
+    "metadataEvents": 40,
+    "storageReads": 1,
+    "seconds": 0.04693719999999999
+  }
+]

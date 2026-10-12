@@ -33,7 +33,7 @@ The executable is compiled from Rust. The Windows UI, transfer engine, queue sto
 
 **Requirements:** Windows 10 or Windows 11, 64-bit.
 
-1. Open `OpenDownloadManager.exe` from the binary package.
+1. Run `ODM-Setup-0.2.0.exe` from the binary package. It installs into `%LOCALAPPDATA%\Programs\Open Download Manager`, adds a Start menu shortcut, and starts in the tray at Windows sign-in. Open ODM from the Start menu or tray.
 2. Click **+**, paste a download link, and choose a destination.
 3. Start the download. Use the toolbar or right-click menu to manage it.
 
@@ -41,9 +41,26 @@ Closing the main window keeps ODM in the system tray. Use the tray menu to reope
 
 ### Connect your browser
 
-The binary package includes `Firefox` and `Chromium` folders. Run `Install.cmd` in the appropriate folder, then follow its instructions to load the extension and register the app.
+Click **Browser plug-in** in ODM and choose **Chrome** or **Firefox**. Until the listings are published, the buttons open official store searches. The installer registers the native host at the fixed installed location; moving a portable EXE does not change the browser connection.
+
+Setup opens this browser chooser after installation. Each button launches its specific browser. Once a listing URL is configured, it opens that listing for installation; users must confirm the install in the browser. Extensions are not silently installed or forced through enterprise policies.
+
+Upload candidates are in `Bin/Store-Uploads`. See [store submission instructions](browser/STORE-SUBMISSION.md) for publisher details, privacy hosting, store IDs, signing and review. Firefox requires version 140+. The Chrome store edition excludes YouTube downloads. Both ask for privacy consent before capture; automatic capture defaults on after acceptance. The desktop app retains its existing video support.
+
+Disable startup in Windows Startup apps. Uninstall ODM using Windows Installed apps; downloaded files and local queue records are retained. Exit ODM from the tray before upgrading.
 
 Browser downloads open separate confirmation and progress windows while the main application stays in the tray. Website access restrictions, login requirements, DRM, and browser verification can affect capture or downloads; browser fallback remains available.
+
+## Build the installer and extension packages
+
+After building the Rust app, install Inno Setup 6.7.3 and run:
+
+```powershell
+.\build-installer.ps1 -ISCC "C:\Path\To\Inno Setup 6\ISCC.exe"
+.\package-extensions.ps1
+```
+
+Set the actual store URLs and Chrome listing ID in `browser-stores.json` before a store release. The supplied Chrome ID matches the unpacked test extension; the store-assigned ID must be verified before publishing an installer for that listing. Setup is currently unsigned. Keep all third-party notices.
 
 ## Build from source
 
@@ -106,6 +123,8 @@ Upload the **contents of Source** to the repository root so the logo, links, and
 ## Testing
 
 The initial Rust release passed **41 automated checks**, covering downloads, segmented resume, error recovery, authentication, proxies, UI workflows, video processing, and large-file assembly. A real YouTube download was also verified with audio and video tracks.
+
+The UI follow-up passed 28 relevant regression checks. The later speed/failure update passed 37 native integration checks and both browser detection suites; all four failed original URLs passed their follow-up downloads. A [100-publisher download audit](tests/reports/100-site-audit.html) records 110 format cases and the exception retests, including original failures and their follow-up results.
 
 See [VALIDATION.md](VALIDATION.md) for results and testing limits, and [tests/README.md](tests/README.md) for integration-test instructions.
 
