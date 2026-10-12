@@ -153,7 +153,7 @@ fn http_transfer(engine: &Arc<Engine>, j: &Arc<Job>) -> Result<(), String> {
             engine,
             j,
             &address,
-            if depth == 0 { Some("0-0") } else { None },
+            if depth == 0 && engine.connections.load(Ordering::Relaxed) > 1 { Some("0-0") } else { None },
             None,
         )?;
         // Some publishers reject a tiny range probe while accepting a normal GET.

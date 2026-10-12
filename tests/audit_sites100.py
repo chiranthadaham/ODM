@@ -49,7 +49,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=5)as pool:
     for r in pool.map(test,enumerate(rows,1)):
         results.append(r);print(f"{len(results)}/{len(rows)} {r['site']}: {r['outcome']} ({r.get('bytes',0)} bytes)",flush=True)
         (ROOT/'progress.json').write_text(json.dumps(results,indent=2),encoding='utf-8')
-meta=dict(date=datetime.datetime.now().isoformat(),version='0.2.0',binarySha256=sha(EXE),sites=100,attempts=len(rows),
+meta=dict(date=datetime.datetime.now().isoformat(),version='0.2.7',binarySha256=sha(EXE),sites=100,attempts=len(rows),
  method='Full-file downloads through the Rust app CLI (same transfer engine as UI), five cases concurrently, four connections each. Fresh independent Windows curl references, SHA256 comparison, ZIP CRC when applicable. No downloaded program was executed. Browser capture was not tested across these sites.',
  selection='100 distinct publishers from the earlier curated popular-site audit, choosing manageable public samples; 10 additional format cases. This is not an authoritative ranking of the top 100 websites. Several publishers use shared GitHub or SourceForge hosting.',
  counts={s:sum(r['outcome']==s for r in results)for s in sorted({r['outcome']for r in results})},results=results)

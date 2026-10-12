@@ -38,13 +38,13 @@ if(browser.webRequest.onBeforeSendHeaders)browser.webRequest.onBeforeSendHeaders
  if(requestContexts.size>=500)requestContexts.clear();requestContexts.set(details.url,{referer,time:Date.now()});
 },{urls:["http://*/*","https://*/*"]},["requestHeaders","extraHeaders"]);
 
-async function sendDownload(url,filename="",sourcePage="") {
+async function sendDownload(url,filename="",sourcePage="",identifiedFile=false) {
   await captureReady;
   if (!consentAccepted) throw new Error("Review privacy and permissions before enabling downloads.");
   if (storeBlocked(url)||storeBlocked(sourcePage)) throw new Error("YouTube downloads are unavailable in the Chrome store extension.");
   if (!supported(url)) throw new Error("Choose an HTTP or HTTPS link.");
   const context=requestContexts.get(url);const details=context&&Date.now()-context.time<120000?{...context}:{};if(!details.referer&&supported(sourcePage)){details.referer=new URL(sourcePage).origin+"/";}
-  const reply = await browser.runtime.sendNativeMessage(HOST, {action:"download", url, filename, verifyAccess:true,userAgent:"",referer:details.referer||""});
+  const reply = await browser.runtime.sendNativeMessage(HOST, {action:"download", url, filename, verifyAccess:!identifiedFile,userAgent:"",referer:details.referer||""});
   if (!reply || !reply.ok || !reply.queued) {const error=new Error(reply?.error || "The app did not accept this download.");error.canceled=!!reply?.canceled;throw error;}
   lastStatus = "Sent to Open Download Manager.";
   await browser.browserAction.setBadgeText({text:""});
@@ -64,7 +64,7 @@ async function capture(item){
   // Chrome holds filename determination while this handler opens the native prompt.
   // Keep the browser item until validation and the user's Start both succeed.
   try{await browser.downloads.pause(item.id);paused=true;}catch{}
-  await sendDownload(item.finalUrl||item.url,(item.filename||"").split(/[\\/]/).pop(),item.referrer||"");
+  await sendDownload(item.finalUrl||item.url,(item.filename||"").split(/[\\/]/).pop(),item.referrer||"",true);
   await browser.downloads.cancel(item.id);lastStatus="Captured in Open Download Manager.";
  }catch(error){
   if(error.canceled){try{await browser.downloads.cancel(item.id);}catch{}lastStatus="Download canceled.";return;}
@@ -124,7 +124,7 @@ browser.runtime.onMessage.addListener(async(message,sender)=>{
   if(message.action==="status")return {lastStatus,capture:consentAccepted&&capturePreference,consent:consentAccepted};
   if(message.action==="capture"){if(!consentAccepted)return {ok:false,error:"Accept permissions first."};await browser.storage.local.set({capture:!!message.enabled});captureChanged=true;capturePreference=!!message.enabled;return {ok:true};}
   if(message.action==="ping"){try{return await browser.runtime.sendNativeMessage(HOST,{action:"ping"});}catch(error){return {ok:false,error:error.message};}}
-  if(message.action==="download"){try{return await sendDownload(message.url,message.filename||"",sender?.tab?.url||"");}catch(error){await report(error);return {ok:false,canceled:!!error.canceled,error:lastStatus};}}
+  if(message.action==="download"){try{return await sendDownload(message.url,message.filename||"",sender?.tab?.url||"",message.identifiedFile===true);}catch(error){await report(error);return {ok:false,canceled:!!error.canceled,error:lastStatus};}}
   return {ok:false,error:"Unknown action"};
 });
 
@@ -153,7 +153,7 @@ async function captureHeaders(details) {
     const plain=/filename\s*=\s*(?:"([^"]+)"|([^;]+))/i.exec(disposition);
     if(encoded){try{filename=decodeURIComponent(encoded[1].trim());}catch{}}
     if(!filename&&plain)filename=(plain[1]||plain[2]).trim();
-    await sendDownload(details.url,filename);
+    await sendDownload(details.url,filename,"",true);
     lastStatus="Captured before the browser saved the file. It is now in the app's queue.";
     return {cancel:true};
   } catch(error) {if(error.canceled){lastStatus="Download canceled.";return {cancel:true};}await report(new Error("The browser kept this download. "+error.message));return {};}

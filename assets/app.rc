@@ -1,8 +1,8 @@
 1 ICON "app.ico"
 1 24 "app.manifest"
 1 VERSIONINFO
- FILEVERSION 0,2,0,0
- PRODUCTVERSION 0,2,0,0
+ FILEVERSION 0,2,8,0
+ PRODUCTVERSION 0,2,8,0
  FILEOS 0x40004
  FILETYPE 0x1
 BEGIN
@@ -11,9 +11,9 @@ BEGIN
   BLOCK "040904B0"
   BEGIN
    VALUE "FileDescription", "Open Download Manager\0"
-   VALUE "FileVersion", "0.2.0\0"
+   VALUE "FileVersion", "0.2.8\0"
    VALUE "ProductName", "Open Download Manager\0"
-   VALUE "ProductVersion", "0.2.0\0"
+   VALUE "ProductVersion", "0.2.8\0"
    VALUE "LegalCopyright", "Original application licensed under MIT\0"
   END
  END

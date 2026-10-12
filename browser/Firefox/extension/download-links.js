@@ -14,13 +14,13 @@
  }
  document.addEventListener("click",async event=>{
   const anchor=event.composedPath().find(el=>el?.tagName==="A"&&el.hasAttribute("download"));
-  if(!enabled||!anchor||bypass.has(anchor)||!anchor.href.startsWith("blob:")||!anchor.download)return;
+  if(!enabled||!anchor||bypass.has(anchor)||! /^(?:blob:|https?:)/i.test(anchor.href))return;
   event.preventDefault();event.stopImmediatePropagation();
-  let source;
-  try{source=await browser.runtime.sendMessage({action:"resolve-blob-download",filename:anchor.download});}catch{}
+  let source=/^https?:/i.test(anchor.href)?{ok:true,url:anchor.href,filename:anchor.download||""}:null;
+  try{if(!source)source=await browser.runtime.sendMessage({action:"resolve-blob-download",filename:anchor.download});}catch{}
   if(!source?.ok){bypass.add(anchor);try{anchor.click();}finally{bypass.delete(anchor);}return;}
   try{
-   const reply=await browser.runtime.sendMessage({action:"download",url:source.url,filename:source.filename});
+   const reply=await browser.runtime.sendMessage({action:"download",url:source.url,filename:source.filename,identifiedFile:true});
    if(!reply?.ok&&!reply?.canceled)failure(reply?.error||"The app could not accept this download.",source.url);
   }catch(error){failure(error.message,source.url);}
  },true);

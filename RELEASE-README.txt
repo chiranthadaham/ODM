@@ -1,7 +1,7 @@
-OPEN DOWNLOAD MANAGER — RUST EDITION 0.2.0
+OPEN DOWNLOAD MANAGER — RUST EDITION 0.2.8
 Windows 10 / 11, 64-bit
 
-Run ODM-Setup-0.2.0.exe. Setup installs per user at
+Run ODM-Setup-0.2.8.exe. Setup installs per user at
 %LOCALAPPDATA%\Programs\Open Download Manager, registers browser connections,
 and adds automatic tray startup at Windows sign-in.
 

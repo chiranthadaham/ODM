@@ -1,10 +1,10 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
 function fixture(file,initial=true,consent=1){
- let reads=0,value=initial,native=0;const listeners={};
+ let reads=0,value=initial,native=0;const messages=[],actions=[];const listeners={};
  const event=name=>({addListener(fn){(listeners[name]??=[]).push(fn);}});
- const browser={tabs:{create:async()=>{}},storage:{local:{get:async()=>{reads++;const capture=value;await new Promise(r=>setTimeout(r,10));return {capture,consentVersion:consent};},set:async v=>{value=v.capture;for(const fn of listeners.storage||[])fn({capture:{newValue:value}},'local');}},onChanged:event('storage')},downloads:{onCreated:event('created'),onChanged:event('changed'),onDeterminingFilename:event('filename')},webRequest:{onBeforeSendHeaders:event('headers'),onHeadersReceived:event('response')},contextMenus:{create(){},onClicked:event('context')},browserAction:{setBadgeText:async()=>{},setBadgeBackgroundColor:async()=>{}},runtime:{getURL:p=>p,onInstalled:event('installed'),onMessage:event('message'),sendNativeMessage:async()=>{native++;return {ok:true,queued:true};}}};
+ const browser={tabs:{create:async()=>{}},storage:{local:{get:async()=>{reads++;const capture=value;await new Promise(r=>setTimeout(r,10));return {capture,consentVersion:consent};},set:async v=>{value=v.capture;for(const fn of listeners.storage||[])fn({capture:{newValue:value}},'local');}},onChanged:event('storage')},downloads:{pause:async id=>{actions.push(["pause",id]);},cancel:async id=>{actions.push(["cancel",id]);},resume:async id=>{actions.push(["resume",id]);},onCreated:event('created'),onChanged:event('changed'),onDeterminingFilename:event('filename')},webRequest:{onBeforeSendHeaders:event('headers'),onHeadersReceived:event('response')},contextMenus:{create(){},onClicked:event('context')},browserAction:{setBadgeText:async()=>{},setBadgeBackgroundColor:async()=>{}},runtime:{getURL:p=>p,onInstalled:event('installed'),onMessage:event('message'),sendNativeMessage:async(host,message)=>{native++;messages.push(message);return {ok:true,queued:true};}}};
  const ctx=vm.createContext({browser,DOWNLOAD_FORMATS:['zip','exe'],URL,console,setTimeout,clearTimeout});vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
- return {ctx,listeners,get reads(){return reads},get native(){return native},get value(){return value}};
+ return {ctx,listeners,messages,actions,get reads(){return reads},get native(){return native},get value(){return value}};
 }
 (async()=>{
  const results=[];
@@ -14,6 +14,18 @@ function fixture(file,initial=true,consent=1){
   const started=performance.now();
   for(let n=0;n<40;n++)assert((await f.ctx.captureHeaders({url:`https://example.com/file-${n}.zip`,method:'GET',statusCode:200,type:'main_frame',tabId:1,responseHeaders:[{name:'Content-Type',value:'application/zip'}]})).cancel);
   assert.equal(f.reads,1);assert.equal(f.native,40);
+  assert(f.messages.every(m=>m.verifyAccess===false),'Identified response must skip duplicate preflight');
+  const cases=[{url:'https://example.com/no-extension',filename:'odd.custom',totalBytes:-1,bytesReceived:0,canResume:false},{url:'https://example.com/tiny',filename:'tiny.xyz',totalBytes:1,bytesReceived:0,canResume:false}];
+  for(let i=0;i<cases.length;i++){
+   const begin=performance.now(),id=900+i;
+   await f.ctx.capture({...cases[i],id,state:'in_progress'});
+   assert(f.actions.some(a=>a[0]==='cancel'&&a[1]===id),'Unknown-size/nonresumable file must reach app');
+   assert.equal(f.messages.at(-1).verifyAccess,false);
+   assert(performance.now()-begin<250,'No body polling delay');
+  }
+  await f.listeners.message[0]({action:'download',url:'https://example.com/landing'},{});
+  assert.equal(f.messages.at(-1).verifyAccess,true,'Unidentified page keeps validation');
+
   for(const fn of f.listeners.storage)fn({capture:{newValue:false}},'local');assert.equal(await f.ctx.captureEnabled(),false);
   for(const fn of f.listeners.installed)fn({reason:'update'});assert.equal(await f.ctx.captureEnabled(),false);
   await f.listeners.message[0]({action:'capture',enabled:true},{});assert.equal(await f.ctx.captureEnabled(),true);

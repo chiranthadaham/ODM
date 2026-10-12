@@ -1,6 +1,6 @@
-# Browser store submission — ODM 2.7.0
+# Browser store submission — ODM 0.2.8
 
-These are upload candidates, not published or approved extensions. The Windows app is version 0.2.0. Extension version numbers are independent.
+These are upload candidates, not published or approved extensions. The Windows app is version 0.2.8. Extension version numbers are independent.
 
 ## Publisher steps required
 
@@ -8,7 +8,7 @@ These are upload candidates, not published or approved extensions. The Windows a
 2. Publish the privacy notice from `extension/consent.html` at a permanent public HTTPS URL, with working publisher/support information. The upload folder contains a standalone notice. Use that URL in both store dashboards. Review the notice against the final release and your own data practices.
 3. Upload the Chrome ZIP as a listing draft, obtain its assigned 32-character extension ID, and replace `chrome_extension_id` in `browser-stores.json`. The upload ZIP omits the unpacked development key. For testing the store identity unpacked, replace the source manifest's public `key` with the public key supplied by the Chrome listing. Do not include private signing keys. Rebuild the installer and verify native messaging against the actual listing ID. The current ID supports the included unpacked development build only.
 4. Add the actual published Chrome and Firefox listing URLs to `browser-stores.json` and rebuild the installer. Until then, Browser plug-in buttons open clearly disclosed official store searches, not a nonexistent ODM listing.
-5. Upload `ODM-Chrome-2.7.0.zip` and `ODM-Firefox-2.7.0.zip` to their respective dashboards, with accurate screenshots, listing descriptions, privacy disclosures, support details, and review instructions. AMO must sign the Firefox release before normal Firefox can install it permanently. Do not rename the unsigned ZIP to XPI and claim it is signed.
+5. Upload `ODM-Chrome-0.2.8.zip` and `ODM-Firefox-0.2.8.zip` to their respective dashboards, with accurate screenshots, listing descriptions, privacy disclosures, support details, and review instructions. AMO must sign the Firefox release before normal Firefox can install it permanently. Do not rename the unsigned ZIP to XPI and claim it is signed.
 6. Submit and complete store review. Neither lint success nor this document guarantees approval or certifies legal compliance. Windows setup and the app are currently unsigned; sign with your own publisher certificate for a public release.
 
 ## Suggested listing
@@ -31,7 +31,7 @@ Firefox requires version 140 or newer and declares `browsingActivity` and `websi
 
 ## Reviewer instructions
 
-Install `ODM-Setup-0.2.0.exe` on Windows x64. It installs per user into `%LOCALAPPDATA%\Programs\Open Download Manager`, registers the browser native messaging host, creates a Start menu shortcut and a startup tray entry. No administrator password is needed. Install the extension, accept or decline its privacy screen, then use Check app connection. Test a direct HTTP/HTTPS file link with capture on, capture off, and the app unavailable. In the native prompt choose a location and Start; confirm the downloaded file contents. Context-menu link handoff and detected unprotected media are additional entry points. No account or paid subscription is required by ODM.
+Install `ODM-Setup-0.2.8.exe` on Windows x64. It installs per user into `%LOCALAPPDATA%\Programs\Open Download Manager`, registers the browser native messaging host, creates a Start menu shortcut and a startup tray entry. No administrator password is needed. Install the extension, accept or decline its privacy screen, then use Check app connection. Test a direct HTTP/HTTPS file link with capture on, capture off, and the app unavailable. In the native prompt choose a location and Start; confirm the downloaded file contents. Context-menu link handoff and detected unprotected media are additional entry points. No account or paid subscription is required by ODM.
 
 Uninstall ODM from Windows Installed apps. Its startup and native messaging registrations are removed only if they still point to this installation. User downloads and saved queue data are retained. Disable startup in Windows Startup apps if desired. Uninstall the extension separately.
 

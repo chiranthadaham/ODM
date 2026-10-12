@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Open Download Manager",
-  "version": "2.7.0",
+  "version": "0.2.8",
   "description": "Capture file downloads and selected media links with the installed Open Download Manager desktop app.",
   "permissions": [
     "nativeMessaging",

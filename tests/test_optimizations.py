@@ -42,6 +42,10 @@ class Tests(unittest.TestCase):
         self.report=Path(str(self.target)+'.result.txt').read_text(encoding='utf-8');return p.returncode
     def test_full_probe_response_is_used_once(self):
         self.assertEqual(self.download('/full.exe'),0,self.report);self.assertEqual(self.target.read_bytes(),DATA);self.assertEqual(len(Server.requests),1)
+    def test_single_connection_skips_range_probe(self):
+        p=subprocess.run([str(EXE),'--download',f'http://127.0.0.1:{self.server.server_port}/single.unknown',str(self.target),'--connections','1'],timeout=30,creationflags=subprocess.CREATE_NO_WINDOW)
+        self.assertEqual(p.returncode,0);self.assertEqual(self.target.read_bytes(),DATA)
+        self.assertEqual(Server.requests,[('/single.unknown','')])
     def test_parallel_limit_falls_back_with_integrity(self):
         self.assertEqual(self.download('/limited.exe'),0,self.report);self.assertEqual(self.target.read_bytes(),DATA);self.assertIn('Connections: 1',self.report)
     def test_rejected_probe_uses_normal_get(self):

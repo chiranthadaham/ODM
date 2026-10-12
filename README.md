@@ -3,7 +3,7 @@
   <h1>Open Download Manager</h1>
   <p>A native Windows download manager, rebuilt in Rust.</p>
   <p>Parallel downloads · Browser integration · Video downloads</p>
-  <img src="https://img.shields.io/badge/version-0.2.0-007AFF" alt="Version 0.2.0">
+  <img src="https://img.shields.io/badge/version-0.2.8-007AFF" alt="Version 0.2.8">
   <img src="https://img.shields.io/badge/language-Rust-orange" alt="Rust">
   <img src="https://img.shields.io/badge/platform-Windows%20x64-0078D4" alt="Windows x64">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license">
@@ -33,7 +33,7 @@ The executable is compiled from Rust. The Windows UI, transfer engine, queue sto
 
 **Requirements:** Windows 10 or Windows 11, 64-bit.
 
-1. Run `ODM-Setup-0.2.0.exe` from the binary package. It installs into `%LOCALAPPDATA%\Programs\Open Download Manager`, adds a Start menu shortcut, and starts in the tray at Windows sign-in. Open ODM from the Start menu or tray.
+1. Run `ODM-Setup-0.2.8.exe` from the binary package. It installs into `%LOCALAPPDATA%\Programs\Open Download Manager`, adds a Start menu shortcut, and starts in the tray at Windows sign-in. Open ODM from the Start menu or tray.
 2. Click **+**, paste a download link, and choose a destination.
 3. Start the download. Use the toolbar or right-click menu to manage it.
 
@@ -43,7 +43,7 @@ Closing the main window keeps ODM in the system tray. Use the tray menu to reope
 
 Click **Browser plug-in** in ODM and choose **Chrome** or **Firefox**. Until the listings are published, the buttons open official store searches. The installer registers the native host at the fixed installed location; moving a portable EXE does not change the browser connection.
 
-Setup opens this browser chooser after installation. Each button launches its specific browser. Once a listing URL is configured, it opens that listing for installation; users must confirm the install in the browser. Extensions are not silently installed or forced through enterprise policies.
+Open this browser chooser using the Browser plug-in button. Each button launches its specific browser. Once a listing URL is configured, it opens that listing for installation; users must confirm the install in the browser. Extensions are not silently installed or forced through enterprise policies.
 
 Upload candidates are in `Bin/Store-Uploads`. See [store submission instructions](browser/STORE-SUBMISSION.md) for publisher details, privacy hosting, store IDs, signing and review. Firefox requires version 140+. The Chrome store edition excludes YouTube downloads. Both ask for privacy consent before capture; automatic capture defaults on after acceptance. The desktop app retains its existing video support.
 
@@ -154,7 +154,7 @@ Queue data and Windows-protected credentials are stored in:
 %LOCALAPPDATA%\OpenDownloadManagerRust
 ```
 
-On first run, ODM can migrate the previous C++ edition's saved queue and connection settings without modifying its saved data. Previously active downloads remain paused until resumed. Avoid running both editions against the same partial download at the same time.
+A fresh install starts with an empty queue. Reinstalling preserves this edition's existing queue and settings.
 
 ## Contributing
 
@@ -184,3 +184,7 @@ ODM follows the Windows app theme by default. Click **Theme: System** to cycle t
 - **Folders:** Settings → **Use file-type subfolders for new downloads**. Save prompts suggest Videos, Audio, Documents, Archives, Images, Applications, or Other beneath the selected base folder. You can override the suggested path. Existing files are not moved; organization is off by default.
 
 Run `tests/test_reliability.py` on Windows with the compiled executable path after closing ODM. Tests use an isolated queue and local HTTP fixtures. They cover checksum success and rejection, server changes, stale segments, queue recovery, byte-range resume, folder suggestions, and persisted settings.
+
+## 0.2.8 startup improvements
+
+Browser-identified downloads avoid a duplicate access preflight. Firefox no longer waits for body bytes, a known file size, or resume support before handoff. Explicit HTTP(S) download links are captured regardless of extension. Single-connection downloads reuse the first normal GET response. See [startup validation](tests/reports/startup-0.2.8.md) for coverage and limits. Server latency, browser-generated files and protected media can still affect downloads.
