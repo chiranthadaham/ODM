@@ -2,6 +2,7 @@
 mod bridge;
 mod http;
 mod integrity;
+mod ipc;
 mod model;
 mod paint;
 mod process;

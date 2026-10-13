@@ -3,7 +3,7 @@
   <h1>Open Download Manager</h1>
   <p>A native Windows download manager, rebuilt in Rust.</p>
   <p>Parallel downloads · Browser integration · Video downloads</p>
-  <img src="https://img.shields.io/badge/version-0.2.8-007AFF" alt="Version 0.2.8">
+  <img src="https://img.shields.io/badge/version-0.2.9-007AFF" alt="Version 0.2.9">
   <img src="https://img.shields.io/badge/language-Rust-orange" alt="Rust">
   <img src="https://img.shields.io/badge/platform-Windows%20x64-0078D4" alt="Windows x64">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="MIT license">
@@ -33,7 +33,7 @@ The executable is compiled from Rust. The Windows UI, transfer engine, queue sto
 
 **Requirements:** Windows 10 or Windows 11, 64-bit.
 
-1. Run `ODM-Setup-0.2.8.exe` from the binary package. It installs into `%LOCALAPPDATA%\Programs\Open Download Manager`, adds a Start menu shortcut, and starts in the tray at Windows sign-in. Open ODM from the Start menu or tray.
+1. Run `ODM-Setup-0.2.9.exe` from the binary package. It installs into `%LOCALAPPDATA%\Programs\Open Download Manager`, adds a Start menu shortcut, and starts in the tray at Windows sign-in. Open ODM from the Start menu or tray.
 2. Click **+**, paste a download link, and choose a destination.
 3. Start the download. Use the toolbar or right-click menu to manage it.
 
@@ -45,7 +45,7 @@ Click **Browser plug-in** in ODM and choose **Chrome** or **Firefox**. Until the
 
 Open this browser chooser using the Browser plug-in button. Each button launches its specific browser. Once a listing URL is configured, it opens that listing for installation; users must confirm the install in the browser. Extensions are not silently installed or forced through enterprise policies.
 
-Upload candidates are in `Bin/Store-Uploads`. See [store submission instructions](browser/STORE-SUBMISSION.md) for publisher details, privacy hosting, store IDs, signing and review. Firefox requires version 140+. The Chrome store edition excludes YouTube downloads. Both ask for privacy consent before capture; automatic capture defaults on after acceptance. The desktop app retains its existing video support.
+Upload candidates are in `Bin/Store-Uploads`. See [store submission instructions](browser/STORE-SUBMISSION.md) for publisher details, privacy hosting, store IDs, signing and review. Firefox requires version 140+. The Chrome store edition excludes YouTube downloads; the locally loaded Chromium edition supports YouTube handoff. Both ask for privacy consent before capture; automatic capture defaults on after acceptance. The desktop app retains its existing video support.
 
 Disable startup in Windows Startup apps. Uninstall ODM using Windows Installed apps; downloaded files and local queue records are retained. Exit ODM from the tray before upgrading.
 
@@ -188,3 +188,11 @@ Run `tests/test_reliability.py` on Windows with the compiled executable path aft
 ## 0.2.8 startup improvements
 
 Browser-identified downloads avoid a duplicate access preflight. Firefox no longer waits for body bytes, a known file size, or resume support before handoff. Explicit HTTP(S) download links are captured regardless of extension. Single-connection downloads reuse the first normal GET response. See [startup validation](tests/reports/startup-0.2.8.md) for coverage and limits. Server latency, browser-generated files and protected media can still affect downloads.
+
+## 0.2.9 Firefox handoff fix
+
+Browser handoff now uses a local named pipe restricted to the current Windows user and session. Both ends verify the peer executable path; remote clients are rejected. A Medium-integrity Firefox native helper can communicate with a High-integrity ODM process without changing browser or Windows security settings. Save/start confirmation, cancellation and access checks remain. Older running ODM copies must be exited before opening the updated app. See [cross-integrity validation](tests/reports/ipc-0.2.9.md).
+
+### Local Chromium YouTube support
+
+Load or reload `Bin/Chromium/extension` for YouTube video-page handoff. The local ZIP retains the development key expected by the desktop native host. `Store-Uploads` contains a separately generated edition with YouTube disabled; do not submit the local edition to the Chrome Web Store.

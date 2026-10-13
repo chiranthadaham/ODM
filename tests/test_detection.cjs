@@ -3,10 +3,11 @@ function fixture(file,initial=true,consent=1){
  let reads=0,value=initial,native=0;const messages=[],actions=[];const listeners={};
  const event=name=>({addListener(fn){(listeners[name]??=[]).push(fn);}});
  const browser={tabs:{create:async()=>{}},storage:{local:{get:async()=>{reads++;const capture=value;await new Promise(r=>setTimeout(r,10));return {capture,consentVersion:consent};},set:async v=>{value=v.capture;for(const fn of listeners.storage||[])fn({capture:{newValue:value}},'local');}},onChanged:event('storage')},downloads:{pause:async id=>{actions.push(["pause",id]);},cancel:async id=>{actions.push(["cancel",id]);},resume:async id=>{actions.push(["resume",id]);},onCreated:event('created'),onChanged:event('changed'),onDeterminingFilename:event('filename')},webRequest:{onBeforeSendHeaders:event('headers'),onHeadersReceived:event('response')},contextMenus:{create(){},onClicked:event('context')},browserAction:{setBadgeText:async()=>{},setBadgeBackgroundColor:async()=>{}},runtime:{getURL:p=>p,onInstalled:event('installed'),onMessage:event('message'),sendNativeMessage:async(host,message)=>{native++;messages.push(message);return {ok:true,queued:true};}}};
- const ctx=vm.createContext({browser,DOWNLOAD_FORMATS:['zip','exe'],URL,console,setTimeout,clearTimeout});vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
+ const ctx=vm.createContext({browser,DOWNLOAD_FORMATS:['zip','exe'],ODM_YOUTUBE_ENABLED:true,URL,console,setTimeout,clearTimeout});vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
  return {ctx,listeners,messages,actions,get reads(){return reads},get native(){return native},get value(){return value}};
 }
-(async()=>{
+module.exports={fixture};
+if(require.main===module)(async()=>{
  const results=[];
  for(const [browser,file]of [['Firefox','background.js'],['Chromium','core.js']]){
   const root=path.resolve(__dirname,'../browser',browser,'extension');const f=fixture(path.join(root,file));
@@ -38,7 +39,7 @@ function fixture(file,initial=true,consent=1){
   assert.equal(denied.native,0);
   assert.equal((await f.listeners.message[0]({action:'download',url:'https://example.com/file.zip'},{tab:{incognito:true}})).ok,false);
   if(browser==='Chromium')for(const url of ['https://www.youtube.com/watch?v=abc','https://rr.googlevideo.com/video.mp4','https://youtu.be/abc']){
-   const before=f.native;assert.equal((await f.listeners.message[0]({action:'download',url},{})).ok,false);assert.equal(f.native,before);
+   const before=f.native;assert.equal((await f.listeners.message[0]({action:'download',url},{})).ok,true);assert.equal(f.native,before+1);
   }
   for(const fn of f.listeners.storage)fn({consentVersion:{newValue:0}},'local');assert.equal(await f.ctx.captureEnabled(),false);
   results.push({browser,passed:true,metadataEvents:40,storageReads:f.reads,seconds:(performance.now()-started)/1000});

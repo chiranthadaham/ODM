@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Open Download Manager",
-  "version": "0.2.8",
+  "version": "0.2.10",
   "description": "Capture file downloads and selected media links with the installed Open Download Manager desktop app.",
   "permissions": [
     "nativeMessaging",
@@ -24,17 +24,11 @@
         "https://www.filesamples.com/*"
       ],
       "js": [
+        "edition.js",
         "compat.js",
         "filesamples.js"
       ],
-      "run_at": "document_start",
-      "exclude_matches": [
-        "*://youtube.com/*",
-        "*://*.youtube.com/*",
-        "*://youtu.be/*",
-        "*://*.youtube-nocookie.com/*",
-        "*://*.googlevideo.com/*"
-      ]
+      "run_at": "document_start"
     },
     {
       "matches": [
@@ -42,18 +36,12 @@
         "https://*/*"
       ],
       "js": [
+        "edition.js",
         "compat.js",
         "video-button.js"
       ],
       "run_at": "document_idle",
-      "all_frames": true,
-      "exclude_matches": [
-        "*://youtube.com/*",
-        "*://*.youtube.com/*",
-        "*://youtu.be/*",
-        "*://*.youtube-nocookie.com/*",
-        "*://*.googlevideo.com/*"
-      ]
+      "all_frames": true
     },
     {
       "matches": [
@@ -61,18 +49,12 @@
         "https://*/*"
       ],
       "js": [
+        "edition.js",
         "compat.js",
         "download-links.js"
       ],
       "run_at": "document_start",
-      "all_frames": true,
-      "exclude_matches": [
-        "*://youtube.com/*",
-        "*://*.youtube.com/*",
-        "*://youtu.be/*",
-        "*://*.youtube-nocookie.com/*",
-        "*://*.googlevideo.com/*"
-      ]
+      "all_frames": true
     }
   ],
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs1vj6Cf9WuUjzYdCEJsszBkDcBJONhtosr0h6WJHfmqRc3itrS/ny0LWw3tCf4ZtL+2KgGupyw+SASFvr6Sader5ZWrzdf0jfO+XelYVgMeWBYXonJkb7zbygFhJ6zW5cj8PE82tjNF68fWw2fcSn8gpSkPpZK/IMYvw6jQoC784MD1vSjUfheqmsus9L4nHgtKQuPcSuugudk2iGoV3mPpbu8gj6yxtYBQBndFC61wloQngB+jZ4DJd4ZJo6+D1ivMpMnriWjU1L9G59eV3RdGUtqNu9mhG33t/6SHxldxxD+7f3h2fwEnmbIJ3xg8izR5gdVZstHbpZ0oWMmrrZwIDAQAB",

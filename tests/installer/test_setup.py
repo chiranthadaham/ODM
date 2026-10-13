@@ -21,6 +21,6 @@ for key,name in [(r'Software\Microsoft\Windows\CurrentVersion\Run','OpenDownload
  try:registry(key,name);raise AssertionError('Uninstall left registry value')
  except FileNotFoundError:pass
 print('PASS: uninstall removed installed app and its own startup/native registrations')
-setup=root.parent/'Bin/ODM-Setup-0.2.8.exe';assert subprocess.run([str(setup),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'],timeout=60).returncode==0
+setup=root.parent/'Bin/ODM-Setup-0.2.9.exe';assert subprocess.run([str(setup),'/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'],timeout=60).returncode==0
 h=helper['wait'](lambda:u.FindWindowW('OpenDownloadManagerRust',None));helper['click'](h,119);helper['wait'](lambda:not u.FindWindowW('OpenDownloadManagerRust',None))
 print('PASS: reinstall restored app and browser connections')

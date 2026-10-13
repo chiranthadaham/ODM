@@ -1,4 +1,4 @@
-#define AppVersion "0.2.8"
+#define AppVersion "0.2.9"
 #ifndef ChromeId
   #define ChromeId "jancefngmifbnaldahilleoinncjppjh"
 #endif

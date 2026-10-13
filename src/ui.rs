@@ -854,7 +854,7 @@ impl App {
                 self.apply_theme();
             }
             118 => {
-                MessageBoxW(self.h,wide("Open Download Manager 0.2.8\nNative Rust edition\n\nMIT licensed. Third-party notices are included in the licenses folder.").as_ptr(),wide("About Open Download Manager").as_ptr(),MB_OK);
+                MessageBoxW(self.h,wide("Open Download Manager 0.2.9\nNative Rust edition\n\nMIT licensed. Third-party notices are included in the licenses folder.").as_ptr(),wide("About Open Download Manager").as_ptr(),MB_OK);
             }
             173 => {
                 if let Some(j) = selected {
@@ -1293,6 +1293,7 @@ unsafe extern "system" fn main_proc(h: HWND, msg: u32, wp: usize, lp: isize) -> 
             PostMessageW(h, WM_APP + 74, 0, 0);
             1
         }
+        m if m == WM_APP + 76 => { a.decisions.remove(&wp); 1 }
         m if m == WM_APP + 71 => *a.decisions.get(&wp).unwrap_or(&0),
         m if m == WM_APP + 73 => {
             for v in &mut a.choices {
@@ -1455,6 +1456,9 @@ pub fn run(engine: Arc<Engine>, background: bool) {
         if h.is_null() {
             message(null_mut(), &error("Create main window"));
             return;
+        }
+        if let Err(e) = crate::ipc::start(a.engine.clone(), h) {
+            message(h, &format!("Browser connection unavailable: {e}"));
         }
         a.refresh();
         if !a.jobs.is_empty() {

@@ -1,1 +1,1 @@
-importScripts("bridge.js","formats.js","core.js");
+importScripts("edition.js","bridge.js","formats.js","core.js");

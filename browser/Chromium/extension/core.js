@@ -29,7 +29,7 @@ function responseFilename(headers) {
 function frameKey(sender){return String(sender?.tab?.id)+":"+String(sender?.frameId||0);}
 let lastStatus = "Ready. Use the capture switch to choose where downloads go.";
 function fileSample(url){try{const u=new URL(url);return ["filesamples.com","www.filesamples.com"].includes(u.hostname.toLowerCase())&&/^\/samples\/[^/]+\/[^/]+\/[^/]+/.test(u.pathname);}catch{return false;}}
-function storeBlocked(url) { try { const h=new URL(url).hostname.toLowerCase(); return ["youtube.com","youtu.be","youtube-nocookie.com","googlevideo.com"].some(d=>h===d||h.endsWith("."+d)); } catch { return false; } }
+function storeBlocked(url) { try { const h=new URL(url).hostname.toLowerCase(); return !ODM_YOUTUBE_ENABLED && ["youtube.com","youtu.be","youtube-nocookie.com","googlevideo.com"].some(d=>h===d||h.endsWith("."+d)); } catch { return false; } }
 function supported(url) { try { return !storeBlocked(url) && ["http:", "https:"].includes(new URL(url).protocol); } catch { return false; } }
 const requestContexts=new Map();
 if(browser.webRequest.onBeforeSendHeaders)browser.webRequest.onBeforeSendHeaders.addListener(details=>{

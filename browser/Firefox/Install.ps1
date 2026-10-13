@@ -1,6 +1,6 @@
 $ErrorActionPreference='Stop'
 $manifest=Join-Path $env:LOCALAPPDATA 'Programs/Open Download Manager/Firefox/native-host.json'
-if(-not(Test-Path -LiteralPath $manifest)){throw 'Install ODM using ODM-Setup-0.2.8.exe first.'}
+if(-not(Test-Path -LiteralPath $manifest)){throw 'Install ODM using ODM-Setup-0.2.9.exe first.'}
 $hostInfo=Get-Content -LiteralPath $manifest -Raw|ConvertFrom-Json
 if(-not(Test-Path -LiteralPath $hostInfo.path)){throw 'Repair the ODM installation.'}
 $key='HKCU:\Software\Mozilla\NativeMessagingHosts\com.opendownloadmanager'

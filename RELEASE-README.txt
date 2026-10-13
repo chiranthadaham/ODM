@@ -1,7 +1,7 @@
-OPEN DOWNLOAD MANAGER — RUST EDITION 0.2.8
+OPEN DOWNLOAD MANAGER — RUST EDITION 0.2.9
 Windows 10 / 11, 64-bit
 
-Run ODM-Setup-0.2.8.exe. Setup installs per user at
+Run ODM-Setup-0.2.9.exe. Setup installs per user at
 %LOCALAPPDATA%\Programs\Open Download Manager, registers browser connections,
 and adds automatic tray startup at Windows sign-in.
 
@@ -32,3 +32,9 @@ Startup can be disabled in Windows Startup apps. Uninstall via Windows
 Installed apps. User downloads and local queue data are retained.
 Exit ODM from its tray menu before upgrading. Setup is currently unsigned.
 
+
+Version 0.2.9 fixes Firefox handoff when the browser helper runs at Medium integrity
+and the app runs at High integrity. A private, per-user local connection replaces
+cross-process window messages. Save/start confirmation is still required.
+Exit older running copies before installing. Existing 0.2.8 browser extensions
+can use this fix; the native-host name and browser protocol remain compatible.
